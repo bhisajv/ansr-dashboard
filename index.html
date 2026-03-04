@@ -665,9 +665,24 @@ async function loadData() {
   document.getElementById("errorState").style.display = "none";
 
   try {
-    const res = await fetch('/api/data');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const data = await new Promise((resolve, reject) => {
+      const callbackName = 'ansrCb_' + Date.now();
+      const script = document.createElement('script');
+      const timer = setTimeout(() => {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        reject(new Error('Request timed out'));
+      }, 15000);
+      window[callbackName] = (data) => {
+        clearTimeout(timer);
+        delete window[callbackName];
+        document.body.removeChild(script);
+        resolve(data);
+      };
+      script.src = `${APPS_SCRIPT_URL}?callback=${callbackName}`;
+      script.onerror = () => { clearTimeout(timer); reject(new Error('Failed to load')); };
+      document.body.appendChild(script);
+    });
     if (!data || !data.sessions) throw new Error("Invalid data from server");
 
     allSessions = data.sessions || [];
