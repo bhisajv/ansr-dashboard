@@ -758,9 +758,13 @@ function applyCustomRange() {
   if (customFrom && customTo) renderAll();
 }
 
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function getDateRange() {
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr = localDateStr(today);
 
   if (currentPeriod === "today") return [todayStr, todayStr];
 
@@ -768,12 +772,12 @@ function getDateRange() {
     const day = today.getDay();
     const mon = new Date(today);
     mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-    return [mon.toISOString().split("T")[0], todayStr];
+    return [localDateStr(mon), todayStr];
   }
 
   if (currentPeriod === "month") {
     const start = new Date(today.getFullYear(), today.getMonth(), 1);
-    return [start.toISOString().split("T")[0], todayStr];
+    return [localDateStr(start), todayStr];
   }
 
   if (currentPeriod === "custom" && customFrom && customTo) {
@@ -946,7 +950,17 @@ function renderChartMachine() {
 
   const vals = entries.map(e => +e.pct.toFixed(1));
 
-  document.getElementById("usageMachinePeriod").textContent =
+  // No data guard
+  if (entries.length === 0) {
+    destroyChart("machine");
+    const ctx = document.getElementById("chartMachine").getContext("2d");
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = "#6b6b72";
+    ctx.font = "13px DM Sans";
+    ctx.textAlign = "center";
+    ctx.fillText("No sessions in this period", ctx.canvas.width / 2, ctx.canvas.height / 2);
+    return;
+  }
     from === to ? from : `${from} → ${to}`;
 
   // Color bars by utilisation level
