@@ -749,13 +749,13 @@ function setPeriod(period, btn) {
   btn.classList.add("active");
   const cr = document.getElementById("customRange");
   cr.classList.toggle("visible", period === "custom");
-  if (period !== "custom") applyFilters();
+  if (period !== "custom") renderAll();
 }
 
 function applyCustomRange() {
   customFrom = document.getElementById("dateFrom").value;
   customTo = document.getElementById("dateTo").value;
-  if (customFrom && customTo) applyFilters();
+  if (customFrom && customTo) renderAll();
 }
 
 function getDateRange() {
