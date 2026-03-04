@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANSR Sites — Machine Usage Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0e0e0f;
+    --surface:   #161617;
+    --surface2:  #1e1e20;
+    --border:    #2a2a2d;
+    --text:      #f0f0f0;
+    --muted:     #6b6b72;
+    --subtle:    #3a3a3e;
+    --accent:    #e8e8e8;
+    --green:     #4ade80;
+    --red:       #f87171;
+    --amber:     #fbbf24;
+    --blue:      #60a5fa;
+    --teal:      #2dd4bf;
+    --font:      'DM Sans', sans-serif;
+    --mono:      'DM Mono', monospace;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .shell {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 28px 48px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--teal);
+    letter-spacing: -0.5px;
+  }
+
+  .header-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  .header-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .last-updated {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  .btn-refresh {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .btn-refresh:hover { color: var(--text); border-color: var(--subtle); }
+
+  /* ── Filters ── */
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+
+  .period-btns {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+
+  .period-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: var(--font);
+    font-weight: 500;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-right: 1px solid var(--border);
+  }
+
+  .period-btn:last-child { border-right: none; }
+  .period-btn:hover { color: var(--text); background: var(--surface2); }
+  .period-btn.active { color: var(--text); background: var(--surface2); }
+
+  .filter-sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+
+  .filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 6px 28px 6px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b72' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  .date-range-inputs {
+    display: none;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .date-range-inputs.visible { display: flex; }
+
+  .date-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+
+  .date-input::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+
+  /* ── KPI Cards ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .kpi-card:hover { border-color: var(--subtle); }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value span {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0;
+  }
+
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .kpi-icon {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    opacity: 0.15;
+  }
+
+  .kpi-card.highlight-green { border-left: 2px solid var(--green); }
+  .kpi-card.highlight-amber { border-left: 2px solid var(--amber); }
+  .kpi-card.highlight-red   { border-left: 2px solid var(--red); }
+  .kpi-card.highlight-blue  { border-left: 2px solid var(--blue); }
+  .kpi-card.highlight-teal  { border-left: 2px solid var(--teal); }
+
+  .kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  .kpi-trend.up   { color: var(--green); }
+  .kpi-trend.down { color: var(--red); }
+  .kpi-trend.neu  { color: var(--muted); }
+
+  /* ── Charts Grid ── */
+  .charts-row {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .charts-row.two-thirds { grid-template-columns: 2fr 1fr; }
+  .charts-row.thirds     { grid-template-columns: 1fr 1fr 1fr; }
+  .charts-row.half       { grid-template-columns: 1fr 1fr; }
+  .charts-row.full       { grid-template-columns: 1fr; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: var(--subtle); }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  .card-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .card-badge {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── Progress Bars (Site Utilisation) ── */
+  .site-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .site-row { display: flex; flex-direction: column; gap: 5px; }
+
+  .site-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .site-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    font-family: var(--mono);
+  }
+
+  .site-hrs {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--mono);
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+
+  /* ── Machine Master Table ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { text-align: left; padding: 8px 12px; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface2); }
+  .td-code { font-family: var(--mono); color: var(--teal); font-size: 11px; }
+  .td-site { color: var(--muted); font-size: 11px; }
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0;
+    gap: 14px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-state {
+    background: rgba(248,113,113,0.05);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 8px;
+    padding: 20px;
+    color: var(--red);
+    font-size: 13px;
+    margin: 20px 0;
+  }
+
+
+  .idle-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border-radius: 6px;
+  }
+
+  .idle-machine { font-size: 11px; font-family: var(--mono); color: var(--text); }
+  .idle-days { font-size: 11px; color: var(--amber); }
+
+  .all-active {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--subtle); }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .charts-row.two-thirds { grid-template-columns: 1fr; }
+    .charts-row.thirds { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 700px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .charts-row.thirds, .charts-row.half { grid-template-columns: 1fr; }
+    .shell { padding: 0 16px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Tooltip ── -->
+<div class="tooltip" id="tooltip"></div>
+
+<div class="shell">
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-mark">Sila</div>
+      <div>
+        <div class="header-title">ANSR Sites — Machine Usage Dashboard</div>
+        <div class="header-subtitle">Real-time usage tracking across all sites</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="last-updated" id="lastUpdated">—</span>
+      <div class="live-badge"><div class="live-dot"></div>Live</div>
+      <button class="btn-refresh" onclick="loadData()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <!-- ── Filters ── -->
+  <div class="filters">
+    <span class="filter-label">Period:</span>
+    <div class="period-btns">
+      <button class="period-btn" data-period="today" onclick="setPeriod('today', this)">Today</button>
+      <button class="period-btn" data-period="week" onclick="setPeriod('week', this)">This Week</button>
+      <button class="period-btn active" data-period="month" onclick="setPeriod('month', this)">This Month</button>
+      <button class="period-btn" data-period="custom" onclick="setPeriod('custom', this)">Custom</button>
+    </div>
+    <div class="date-range-inputs" id="customRange">
+      <input class="date-input" type="date" id="dateFrom" onchange="applyCustomRange()">
+      <span style="color:var(--muted);font-size:12px;">→</span>
+      <input class="date-input" type="date" id="dateTo" onchange="applyCustomRange()">
+    </div>
+    <div class="filter-sep"></div>
+    <select class="filter-select" id="siteFilter" onchange="renderAll()">
+      <option value="">All Sites</option>
+    </select>
+    <select class="filter-select" id="machineFilter" onchange="renderAll()">
+      <option value="">All Machines</option>
+    </select>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <span>Loading data from Google Sheets…</span>
+  </div>
+
+  <div id="errorState" class="error-state" style="display:none"></div>
+
+  <!-- ── Dashboard ── -->
+  <div id="dashboard" style="display:none">
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- Row 1: Usage by Machine (bar) + Machine Type (donut) -->
+    <div class="charts-row two-thirds">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Machine Utilisation</div>
+            <div class="card-sub">Top machines by % of available hours used</div>
+          </div>
+          <span class="card-badge" id="usageMachinePeriod">—</span>
+        </div>
+        <canvas id="chartMachine" height="200"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Usage by Machine Type</div>
+            <div class="card-sub">Share of total hours</div>
+          </div>
+        </div>
+        <canvas id="chartType" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Row 2: Site Hours + Site Utilisation % side by side -->
+    <div class="charts-row half" style="margin-top:12px">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Site Usage</div>
+            <div class="card-sub">Absolute hours per site</div>
+          </div>
+        </div>
+        <div class="site-list" id="siteHours"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Site Utilisation</div>
+            <div class="card-sub">% of max possible hours used</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:10px;color:var(--muted)">8h day</span>
+            <select class="filter-select" id="utilDayType" onchange="renderSiteUtil()" style="font-size:11px;padding:3px 22px 3px 8px">
+              <option value="working">Mon–Sat</option>
+              <option value="all">All days</option>
+            </select>
+          </div>
+        </div>
+        <div class="site-list" id="siteUtil"></div>
+      </div>
+    </div>
+
+    <!-- Row 3: Idle Machines -->
+    <div class="charts-row full" style="margin-top:12px">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Idle Machines</div>
+            <div class="card-sub">Not used in selected period</div>
+          </div>
+          <span class="card-badge" id="idleBadge">0 Idle</span>
+        </div>
+        <div class="idle-list" id="idleList"></div>
+      </div>
+    </div>
+
+    <!-- Machine Master -->
+    <div class="charts-row full" style="margin-top:12px">
+      <div class="card">
+        <div class="card-header" style="cursor:pointer" onclick="toggleMachineMaster()">
+          <div>
+            <div class="card-title">Machine Master</div>
+            <div class="card-sub">Full list of registered machines across all sites</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="text" id="masterSearch" placeholder="Search machine or site…"
+              onclick="event.stopPropagation()"
+              oninput="renderMachineMaster()"
+              style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+                     padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:200px">
+            <span id="masterToggleIcon" style="color:var(--muted);font-size:16px">▼</span>
+          </div>
+        </div>
+        <div id="machineMasterWrap" style="display:none;margin-top:12px">
+          <div class="table-wrap">
+            <table id="machineMasterTable">
+              <thead>
+                <tr>
+                  <th>Machine ID</th>
+                  <th>Site</th>
+                  <th>Description</th>
+                  <th>Make</th>
+                  <th>Model</th>
+                </tr>
+              </thead>
+              <tbody id="machineMasterBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div><!-- /#dashboard -->
+</div><!-- /.shell -->
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CONFIG — paste your Apps Script Web App URL here
+// ══════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIgvy3Av3PSTkG9IuHot6vPw6Xykx1FGKtwm3pAuRUobp97sGwzWNPP15ojrXGJdrk/exec";
+
+// ══════════════════════════════════════════════════════════
+// State
+// ══════════════════════════════════════════════════════════
+let allSessions = [];
+let allMachines = [];
+let filteredSessions = [];
+let currentPeriod = "month";
+let customFrom = null;
+let customTo = null;
+let charts = {};
+
+// ══════════════════════════════════════════════════════════
+// Fetch Data — via Netlify proxy
+// ══════════════════════════════════════════════════════════
+async function loadData() {
+  document.getElementById("loadingState").style.display = "flex";
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("errorState").style.display = "none";
+
+  try {
+    const res = await fetch('/api/data');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data || !data.sessions) throw new Error("Invalid data from server");
+
+    allSessions = data.sessions || [];
+    allMachines = data.machines || [];
+
+    populateFilters();
+    renderAll();
+
+    const lu = data.lastUpdated ? new Date(data.lastUpdated) : new Date();
+    document.getElementById("lastUpdated").textContent =
+      lu.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+
+  } catch (err) {
+    document.getElementById("loadingState").style.display = "none";
+    const errEl = document.getElementById("errorState");
+    errEl.style.display = "block";
+    errEl.textContent = "⚠ Failed to load data: " + err.message +
+      ". Check your Apps Script URL or network connection.";
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// Demo Data
+// ══════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════
+// Filters
+// ══════════════════════════════════════════════════════════
+function populateFilters() {
+  // Build site map: code → name
+  const siteMap = {};
+  allSessions.forEach(s => { siteMap[s.siteCode] = s.siteName; });
+
+  const siteEl = document.getElementById("siteFilter");
+  siteEl.innerHTML = '<option value="">All Sites</option>';
+  Object.entries(siteMap)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .forEach(([code, name]) => {
+      const o = document.createElement("option");
+      o.value = code;
+      // Format: SITE3180 — ANSR RMZ
+      const shortName = name.replace(/^ANSR\s*[–-]\s*/i, '').replace(/^ANSR\s+/i, '');
+      o.textContent = `${code} — ${shortName}`;
+      siteEl.appendChild(o);
+    });
+
+  const machines = [...new Set(allSessions.map(s => s.machineId))].sort();
+  const mEl = document.getElementById("machineFilter");
+  mEl.innerHTML = '<option value="">All Machines</option>';
+  machines.forEach(m => {
+    const o = document.createElement("option");
+    o.value = m;
+    o.textContent = m;
+    mEl.appendChild(o);
+  });
+}
+
+function setPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll(".period-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const cr = document.getElementById("customRange");
+  cr.classList.toggle("visible", period === "custom");
+  if (period !== "custom") applyFilters();
+}
+
+function applyCustomRange() {
+  customFrom = document.getElementById("dateFrom").value;
+  customTo = document.getElementById("dateTo").value;
+  if (customFrom && customTo) applyFilters();
+}
+
+function getDateRange() {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+
+  if (currentPeriod === "today") return [todayStr, todayStr];
+
+  if (currentPeriod === "week") {
+    const day = today.getDay();
+    const mon = new Date(today);
+    mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+    return [mon.toISOString().split("T")[0], todayStr];
+  }
+
+  if (currentPeriod === "month") {
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+    return [start.toISOString().split("T")[0], todayStr];
+  }
+
+  if (currentPeriod === "custom" && customFrom && customTo) {
+    return [customFrom, customTo];
+  }
+
+  return [todayStr, todayStr];
+}
+
+function applyFilters() {
+  const [from, to] = getDateRange();
+  const siteFilter = document.getElementById("siteFilter").value;
+  const machineFilter = document.getElementById("machineFilter").value;
+
+  filteredSessions = allSessions.filter(s => {
+    const d = s.date;
+    if (d < from || d > to) return false;
+    if (siteFilter && s.siteCode !== siteFilter) return false;
+    if (machineFilter && s.machineId !== machineFilter) return false;
+    return true;
+  });
+}
+
+function renderAll() {
+  applyFilters();
+  renderKPIs();
+  renderChartMachine();
+  renderChartType();
+  renderSiteHours();
+  renderSiteUtil();
+  renderIdleMachines();
+}
+
+// ══════════════════════════════════════════════════════════
+// KPIs
+// ══════════════════════════════════════════════════════════
+function renderKPIs() {
+  const sessions = filteredSessions;
+  const totalHrs = sessions.reduce((a, s) => a + s.duration, 0);
+  const activeMachines = new Set(sessions.map(s => s.machineId)).size;
+  const sessionCount = sessions.length;
+  const avgSession = sessionCount > 0 ? totalHrs / sessionCount : 0;
+
+  // Idle: machines not in filtered sessions
+  const usedMachines = new Set(sessions.map(s => s.machineId));
+  const idleCount = allMachines.filter(m => !usedMachines.has(m.machineId)).length;
+
+  const kpis = [
+    {
+      label: "Total Usage",
+      value: totalHrs.toFixed(1),
+      unit: "hrs",
+      sub: `${sessionCount} completed sessions`,
+      cls: "highlight-teal",
+      icon: "⏱"
+    },
+    {
+      label: "Active Machines",
+      value: activeMachines,
+      unit: "units",
+      sub: `across ${new Set(sessions.map(s => s.siteCode)).size} sites`,
+      cls: "highlight-green",
+      icon: "⚙"
+    },
+    {
+      label: "Sessions Logged",
+      value: sessionCount,
+      unit: "logs",
+      sub: `${sessions.filter(s => s.nightShift).length} night shifts`,
+      cls: "highlight-blue",
+      icon: "📋"
+    },
+    {
+      label: "Avg Session",
+      value: avgSession.toFixed(2),
+      unit: "hrs",
+      sub: "per session",
+      cls: "highlight-amber",
+      icon: "📊"
+    },
+    {
+      label: "Idle Machines",
+      value: idleCount,
+      unit: "units",
+      sub: idleCount === 0 ? "All machines active" : "not used this period",
+      cls: idleCount > 0 ? "highlight-red" : "highlight-green",
+      icon: "⚠"
+    }
+  ];
+
+  document.getElementById("kpiGrid").innerHTML = kpis.map(k => `
+    <div class="kpi-card ${k.cls}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}<span> ${k.unit}</span></div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>
+  `).join("");
+}
+
+// ══════════════════════════════════════════════════════════
+// Chart helpers
+// ══════════════════════════════════════════════════════════
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: "#1e1e20",
+      borderColor: "#2a2a2d",
+      borderWidth: 1,
+      titleColor: "#f0f0f0",
+      bodyColor: "#6b6b72",
+      padding: 10,
+      cornerRadius: 6
+    }
+  }
+};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+// ══════════════════════════════════════════════════════════
+// Chart: Usage by Machine (bar)
+// ══════════════════════════════════════════════════════════
+function renderChartMachine() {
+  destroyChart("machine");
+
+  // Build machine → hours from filtered sessions
+  const machineData = {};
+  filteredSessions.forEach(s => {
+    if (!machineData[s.machineId]) {
+      machineData[s.machineId] = { hrs: 0, siteCode: s.siteCode, siteName: s.siteName, desc: s.machineDesc };
+    }
+    machineData[s.machineId].hrs += s.duration;
+  });
+
+  // Calculate utilisation % per machine: hrs / (8h × days in period)
+  const [from, to] = getDateRange();
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+  let periodDays = 0;
+  const cur = new Date(fromDate);
+  while (cur <= toDate) {
+    const dow = cur.getDay();
+    if (dow >= 1 && dow <= 6) periodDays++; // Mon–Sat
+    cur.setDate(cur.getDate() + 1);
+  }
+  periodDays = Math.max(1, periodDays);
+  const maxHrs = 8 * periodDays;
+
+  // Build sorted entries by utilisation %
+  const entries = Object.entries(machineData).map(([id, d]) => ({
+    id,
+    hrs: d.hrs,
+    pct: Math.min(100, (d.hrs / maxHrs * 100)),
+    siteName: d.siteName,
+    desc: d.desc
+  })).sort((a, b) => b.pct - a.pct).slice(0, 8);
+
+  // Label: machine model · short site name
+  const labels = entries.map(e => {
+    const shortSite = e.siteName.replace(/^ANSR\s*[–-]\s*/i, '').replace(/^ANSR\s+/i, '');
+    // Extract model from machine ID (last segment after final dash group)
+    const parts = e.id.split('-');
+    const model = parts.slice(1, parts.length - 1).join('-') || e.id;
+    return `${model} · ${shortSite}`;
+  });
+
+  const vals = entries.map(e => +e.pct.toFixed(1));
+
+  document.getElementById("usageMachinePeriod").textContent =
+    from === to ? from : `${from} → ${to}`;
+
+  // Color bars by utilisation level
+  const barColors = vals.map(v =>
+    v >= 75 ? "rgba(74,222,128,0.7)"   // green — high use
+    : v >= 40 ? "rgba(45,212,191,0.7)" // teal — moderate
+    : "rgba(251,191,36,0.5)"           // amber — low use
+  );
+  const borderColors = vals.map(v =>
+    v >= 75 ? "#4ade80" : v >= 40 ? "#2dd4bf" : "#fbbf24"
+  );
+
+  const ctx = document.getElementById("chartMachine").getContext("2d");
+  charts.machine = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: barColors,
+        borderColor: borderColors,
+        borderWidth: 1,
+        borderRadius: 4,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: {
+          ticks: { color: "#6b6b72", font: { family: "'DM Mono'", size: 10 }, maxRotation: 30, minRotation: 15 },
+          grid: { display: false },
+          border: { display: false }
+        },
+        y: {
+          min: 0,
+          max: 100,
+          ticks: {
+            color: "#6b6b72",
+            font: { family: "'DM Mono'", size: 10 },
+            callback: v => v + "%"
+          },
+          grid: { color: "#2a2a2d" },
+          border: { display: false }
+        }
+      },
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const e = entries[ctx.dataIndex];
+              return [
+                ` ${ctx.parsed.y.toFixed(1)}% utilised`,
+                ` ${e.hrs.toFixed(1)}h of ${maxHrs}h max`
+              ];
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// Chart: Machine Type (donut)
+// ══════════════════════════════════════════════════════════
+function renderChartType() {
+  destroyChart("type");
+
+  const typeHours = {};
+  filteredSessions.forEach(s => {
+    const type = s.machineDesc.includes("Disc") ? "Disc Machine" :
+                 s.machineDesc.includes("Vacuum") || s.machineDesc.includes("vacuum") ? "Vacuum" :
+                 s.machineDesc.includes("Jet") ? "Jet Machine" :
+                 s.machineDesc.includes("Pressure") ? "Pressure Jet" : "Other";
+    typeHours[type] = (typeHours[type] || 0) + s.duration;
+  });
+
+  const labels = Object.keys(typeHours);
+  const vals = Object.values(typeHours).map(v => +v.toFixed(2));
+  const colors = ["#2dd4bf", "#60a5fa", "#fbbf24", "#f87171", "#a78bfa"];
+
+  const ctx = document.getElementById("chartType").getContext("2d");
+  charts.type = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: colors.slice(0, labels.length).map(c => c + "55"),
+        borderColor: colors.slice(0, labels.length),
+        borderWidth: 1.5
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      cutout: "70%",
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: {
+          display: true,
+          position: "bottom",
+          labels: {
+            color: "#6b6b72",
+            font: { family: "'DM Sans'", size: 11 },
+            padding: 12,
+            boxWidth: 10
+          }
+        }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// Site Utilisation
+// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// Site Hours (absolute)
+// ══════════════════════════════════════════════════════════
+function renderSiteHours() {
+  const siteNameMap = {};
+  allSessions.forEach(s => { siteNameMap[s.siteCode] = s.siteName; });
+
+  const siteHours = {};
+  filteredSessions.forEach(s => {
+    siteHours[s.siteCode] = (siteHours[s.siteCode] || 0) + s.duration;
+  });
+
+  const sorted = Object.entries(siteHours).sort((a, b) => b[1] - a[1]);
+  const max = sorted.length ? sorted[0][1] : 1;
+  const colors = ["#2dd4bf","#4ade80","#fbbf24","#60a5fa","#f87171","#a78bfa","#fb923c"];
+
+  document.getElementById("siteHours").innerHTML = sorted.map(([code, hrs], i) => {
+    const name = siteNameMap[code] || code;
+    const shortName = name.replace(/^ANSR\s*[–-]\s*/i,'').replace(/^ANSR\s+/i,'');
+    return `
+    <div class="site-row">
+      <div class="site-row-top">
+        <span class="site-name" title="${name}">${shortName}</span>
+        <span class="site-hrs">${hrs.toFixed(1)}h</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${(hrs/max*100).toFixed(1)}%;background:${colors[i%colors.length]}"></div>
+      </div>
+    </div>`;
+  }).join("") || '<div style="color:var(--muted);font-size:12px;padding:8px 0">No data for this period</div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// Site Utilisation (% of max possible)
+// ══════════════════════════════════════════════════════════
+function renderSiteUtil() {
+  const siteMachineCount = {};
+  allMachines.forEach(m => {
+    siteMachineCount[m.siteCode] = (siteMachineCount[m.siteCode] || 0) + 1;
+  });
+
+  const siteNameMap = {};
+  allSessions.forEach(s => { siteNameMap[s.siteCode] = s.siteName; });
+
+  const siteHours = {};
+  filteredSessions.forEach(s => {
+    siteHours[s.siteCode] = (siteHours[s.siteCode] || 0) + s.duration;
+  });
+
+  const [from, to] = getDateRange();
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+  const dayType = document.getElementById("utilDayType")?.value || "working";
+
+  // Count days in period
+  let periodDays = 0;
+  const cur = new Date(fromDate);
+  while (cur <= toDate) {
+    const dow = cur.getDay();
+    if (dayType === "all" || (dow >= 1 && dow <= 6)) periodDays++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  periodDays = Math.max(1, periodDays);
+
+  const sorted = Object.entries(siteHours).sort((a, b) => b[1] - a[1]);
+  const colors = ["#2dd4bf","#4ade80","#fbbf24","#60a5fa","#f87171","#a78bfa","#fb923c"];
+
+  document.getElementById("siteUtil").innerHTML = sorted.map(([code, hrs], i) => {
+    const machineCount = siteMachineCount[code] || 1;
+    const maxPossible = machineCount * 8 * periodDays;
+    const pct = Math.min(100, (hrs / maxPossible * 100)).toFixed(1);
+    const name = siteNameMap[code] || code;
+    const shortName = name.replace(/^ANSR\s*[–-]\s*/i,'').replace(/^ANSR\s+/i,'');
+
+    return `
+    <div class="site-row">
+      <div class="site-row-top">
+        <span class="site-name" title="${name}">${shortName}</span>
+        <span class="site-hrs">${pct}%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${pct}%;background:${colors[i%colors.length]}"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">
+        ${machineCount} machine${machineCount>1?'s':''} · ${hrs.toFixed(1)}h of ${maxPossible}h max
+      </div>
+    </div>`;
+  }).join("") || '<div style="color:var(--muted);font-size:12px;padding:8px 0">No data for this period</div>';
+}
+
+// ══════════════════════════════════════════════════════════
+// Idle Machines
+// ══════════════════════════════════════════════════════════
+function renderIdleMachines() {
+  const usedIds = new Set(filteredSessions.map(s => s.machineId));
+  const idle = allMachines.filter(m => !usedIds.has(m.machineId));
+
+  document.getElementById("idleBadge").textContent = `${idle.length} Idle`;
+
+  if (idle.length === 0) {
+    document.getElementById("idleList").innerHTML = `
+      <div class="all-active">
+        <span style="color:var(--green);font-size:16px">✓</span>
+        All machines active in this period
+      </div>`;
+  } else {
+    document.getElementById("idleList").innerHTML = idle.map(m => {
+      const shortName = m.siteName.replace(/^ANSR\s*[–-]\s*/i,'').replace(/^ANSR\s+/i,'');
+      return `
+      <div class="idle-item">
+        <div>
+          <div class="idle-machine">${m.machineId}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${shortName} · ${m.machineDesc}</div>
+        </div>
+        <span class="idle-days">Idle</span>
+      </div>`;
+    }).join("");
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// Machine Master
+// ══════════════════════════════════════════════════════════
+let masterOpen = false;
+
+function toggleMachineMaster() {
+  masterOpen = !masterOpen;
+  document.getElementById("machineMasterWrap").style.display = masterOpen ? "block" : "none";
+  document.getElementById("masterToggleIcon").textContent = masterOpen ? "▲" : "▼";
+  if (masterOpen) renderMachineMaster();
+}
+
+function renderMachineMaster() {
+  const q = (document.getElementById("masterSearch")?.value || "").toLowerCase();
+  const filtered = allMachines.filter(m =>
+    !q ||
+    m.machineId.toLowerCase().includes(q) ||
+    m.siteName.toLowerCase().includes(q) ||
+    m.machineDesc.toLowerCase().includes(q) ||
+    m.make.toLowerCase().includes(q) ||
+    m.model.toLowerCase().includes(q)
+  );
+
+  const sorted = [...filtered].sort((a, b) => a.siteCode.localeCompare(b.siteCode));
+
+  document.getElementById("machineMasterBody").innerHTML = sorted.map(m => {
+    const shortSite = m.siteName.replace(/^ANSR\s*[–-]\s*/i,'').replace(/^ANSR\s+/i,'').replace(/^Ansr\s+/i,'');
+    return `
+    <tr>
+      <td class="td-code">${m.machineId}</td>
+      <td class="td-site" title="${m.siteName}">${shortSite}</td>
+      <td>${m.machineDesc}</td>
+      <td style="color:var(--muted);font-size:11px">${m.make || '—'}</td>
+      <td style="font-family:var(--mono);font-size:11px">${m.model || '—'}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No machines found</td></tr>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// Init
+// ══════════════════════════════════════════════════════════
+loadData();
+</script>
+</body>
+</html>
