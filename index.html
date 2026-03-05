@@ -479,13 +479,24 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 10px;
+    padding: 7px 10px;
     background: var(--surface2);
     border-radius: 6px;
   }
 
   .idle-machine { font-size: 11px; font-family: var(--mono); color: var(--text); }
-  .idle-days { font-size: 11px; color: var(--amber); }
+  .idle-site    { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .idle-days    { font-size: 11px; color: var(--amber); flex-shrink: 0; }
+
+  .idle-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 320px;
+    overflow-y: auto;
+    margin-top: 10px;
+    padding-right: 2px;
+  }
 
   .all-active {
     display: flex;
@@ -495,6 +506,18 @@
     color: var(--green);
     font-size: 13px;
     font-weight: 500;
+  }
+
+  /* Side-by-side bottom row */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+    align-items: start;
+  }
+  @media (max-width: 800px) {
+    .bottom-row { grid-template-columns: 1fr; }
   }
 
   /* ── Scrollbar ── */
@@ -675,8 +698,10 @@
       </div>
     </div>
 
-    <!-- Row 3: Idle Machines -->
-    <div class="charts-row full" style="margin-top:12px">
+    <!-- Row 3: Idle Machines + Machine Master side by side -->
+    <div class="bottom-row">
+
+      <!-- Idle Machines -->
       <div class="card">
         <div class="card-header">
           <div>
@@ -687,26 +712,24 @@
         </div>
         <div class="idle-list" id="idleList"></div>
       </div>
-    </div>
 
-    <!-- Machine Master -->
-    <div class="charts-row full" style="margin-top:12px">
+      <!-- Machine Master -->
       <div class="card">
         <div class="card-header" style="cursor:pointer" onclick="toggleMachineMaster()">
           <div>
             <div class="card-title">Machine Master</div>
-            <div class="card-sub">Full list of registered machines across all sites</div>
+            <div class="card-sub">All registered machines</div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <input type="text" id="masterSearch" placeholder="Search machine or site…"
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="text" id="masterSearch" placeholder="Search…"
               onclick="event.stopPropagation()"
               oninput="renderMachineMaster()"
               style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
-                     padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:200px">
-            <span id="masterToggleIcon" style="color:var(--muted);font-size:16px">▼</span>
+                     padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:140px">
+            <span id="masterToggleIcon" style="color:var(--muted);font-size:14px">▼</span>
           </div>
         </div>
-        <div id="machineMasterWrap" style="display:none;margin-top:12px">
+        <div id="machineMasterWrap" style="display:none;margin-top:10px">
           <div class="table-wrap">
             <table id="machineMasterTable">
               <thead>
@@ -723,8 +746,8 @@
           </div>
         </div>
       </div>
-    </div>
 
+    </div><!-- /.bottom-row -->
 
   </div><!-- /#dashboard -->
 </div><!-- /.shell -->
