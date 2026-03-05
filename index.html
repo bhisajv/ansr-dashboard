@@ -468,9 +468,35 @@
 
   @media (max-width: 700px) {
     .kpi-grid { grid-template-columns: 1fr 1fr; }
-    .charts-row.thirds, .charts-row.half { grid-template-columns: 1fr; }
-    .shell { padding: 0 16px 32px; }
+    .charts-row.two-thirds, .charts-row.thirds, .charts-row.half { grid-template-columns: 1fr; }
+    .shell { padding: 0 12px 32px; }
+    .header { flex-wrap: wrap; gap: 8px; padding: 12px 0; }
+    .header-meta { font-size: 11px; }
+    .filters { flex-wrap: wrap; gap: 8px; }
+    .filter-select { width: 100%; }
+    .period-btn { padding: 6px 10px; font-size: 11px; }
+    .card { padding: 14px; }
+    .kpi-val { font-size: 28px; }
+    canvas { max-height: 220px !important; }
+    .site-grid { grid-template-columns: 1fr !important; }
+    .idle-grid { grid-template-columns: 1fr 1fr !important; }
   }
+
+  @media (max-width: 400px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 15px; }
+  }
+
+  /* Skeleton loading animation */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .skeleton-kpi { height: 100px; }
+  .skeleton-chart { height: 260px; }
 </style>
 </head>
 <body>
@@ -519,10 +545,19 @@
     </select>
   </div>
 
-  <!-- ── Loading ── -->
-  <div class="loading-state" id="loadingState">
-    <div class="spinner"></div>
-    <span>Loading data from Google Sheets…</span>
+  <!-- ── Loading Skeleton ── -->
+  <div id="loadingState">
+    <div class="kpi-grid" style="margin-bottom:24px">
+      <div class="card skeleton skeleton-kpi"></div>
+      <div class="card skeleton skeleton-kpi"></div>
+      <div class="card skeleton skeleton-kpi"></div>
+      <div class="card skeleton skeleton-kpi"></div>
+      <div class="card skeleton skeleton-kpi"></div>
+    </div>
+    <div class="charts-row two-thirds">
+      <div class="card skeleton skeleton-chart"></div>
+      <div class="card skeleton skeleton-chart"></div>
+    </div>
   </div>
 
   <div id="errorState" class="error-state" style="display:none"></div>
@@ -657,33 +692,59 @@ let customTo = null;
 let charts = {};
 
 // ══════════════════════════════════════════════════════════
-// Fetch Data — via Netlify proxy
 // ══════════════════════════════════════════════════════════
-async function loadData() {
-  document.getElementById("loadingState").style.display = "flex";
-  document.getElementById("dashboard").style.display = "none";
-  document.getElementById("errorState").style.display = "none";
+// Fetch Data — JSONP with retry + auto-refresh
+// ══════════════════════════════════════════════════════════
+let autoRefreshTimer = null;
+let isFirstLoad = true;
+
+function scheduleAutoRefresh() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    loadData(true); // silent refresh — don't show skeleton
+  }, 60000); // every 60 seconds
+}
+
+async function fetchWithRetry(retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const data = await new Promise((resolve, reject) => {
+        const callbackName = 'ansrCb_' + Date.now();
+        const script = document.createElement('script');
+        const timer = setTimeout(() => {
+          delete window[callbackName];
+          if (document.body.contains(script)) document.body.removeChild(script);
+          reject(new Error('Timeout on attempt ' + attempt));
+        }, 15000);
+        window[callbackName] = (data) => {
+          clearTimeout(timer);
+          delete window[callbackName];
+          if (document.body.contains(script)) document.body.removeChild(script);
+          resolve(data);
+        };
+        script.src = `${APPS_SCRIPT_URL}?callback=${callbackName}&t=${Date.now()}`;
+        script.onerror = () => { clearTimeout(timer); reject(new Error('Script load failed')); };
+        document.body.appendChild(script);
+      });
+      if (data && data.sessions) return data;
+      throw new Error('Invalid data structure');
+    } catch(err) {
+      if (attempt === retries) throw err;
+      // Exponential backoff: 2s, 4s, 8s
+      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+    }
+  }
+}
+
+async function loadData(silent = false) {
+  if (!silent) {
+    document.getElementById("loadingState").style.display = "block";
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("errorState").style.display = "none";
+  }
 
   try {
-    const data = await new Promise((resolve, reject) => {
-      const callbackName = 'ansrCb_' + Date.now();
-      const script = document.createElement('script');
-      const timer = setTimeout(() => {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        reject(new Error('Request timed out'));
-      }, 15000);
-      window[callbackName] = (data) => {
-        clearTimeout(timer);
-        delete window[callbackName];
-        document.body.removeChild(script);
-        resolve(data);
-      };
-      script.src = `${APPS_SCRIPT_URL}?callback=${callbackName}`;
-      script.onerror = () => { clearTimeout(timer); reject(new Error('Failed to load')); };
-      document.body.appendChild(script);
-    });
-    if (!data || !data.sessions) throw new Error("Invalid data from server");
+    const data = await fetchWithRetry(3);
 
     allSessions = data.sessions || [];
     allMachines = data.machines || [];
@@ -697,19 +758,26 @@ async function loadData() {
 
     document.getElementById("loadingState").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
+    document.getElementById("errorState").style.display = "none";
 
-  } catch (err) {
+    if (isFirstLoad) {
+      isFirstLoad = false;
+      scheduleAutoRefresh();
+    }
+
+  } catch(err) {
     document.getElementById("loadingState").style.display = "none";
-    const errEl = document.getElementById("errorState");
-    errEl.style.display = "block";
-    errEl.textContent = "⚠ Failed to load data: " + err.message +
-      ". Check your Apps Script URL or network connection.";
+    if (!silent) {
+      document.getElementById("dashboard").style.display = "none";
+      const errEl = document.getElementById("errorState");
+      errEl.style.display = "block";
+      errEl.innerHTML = `⚠ Failed to load data after 3 attempts: ${err.message}<br>
+        <small style="opacity:0.7">Check your Apps Script URL or network connection</small><br><br>
+        <button onclick="loadData()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px">↻ Retry</button>`;
+    }
+    // On silent refresh failure, keep showing existing data — don't disrupt the user
   }
 }
-
-// ══════════════════════════════════════════════════════════
-// Demo Data
-// ══════════════════════════════════════════════════════════
 
 // ══════════════════════════════════════════════════════════
 // Filters
