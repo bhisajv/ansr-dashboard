@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANSR Sites Machine Usage Dashboard</title>
+<title>ANSR Sites — Machine Usage Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -462,10 +462,27 @@
 
 
   /* ── Machine Master Table ── */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  thead th { text-align: left; padding: 8px 12px; color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
-  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .table-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 320px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 420px; }
+  thead th {
+    text-align: left;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+  tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 11px; }
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--surface2); }
   .td-code { font-family: var(--mono); color: var(--teal); font-size: 11px; }
@@ -758,7 +775,7 @@
           </div>
         </div>
         <div id="machineMasterWrap" style="display:none;margin-top:10px">
-          <div class="table-wrap">
+          <div class="table-wrap" style="max-height:320px;overflow-y:auto;overflow-x:auto">
             <table id="machineMasterTable">
               <thead>
                 <tr>
