@@ -760,35 +760,29 @@
 
       <!-- Machine Master -->
       <div class="card">
-        <div class="card-header" style="cursor:pointer" onclick="toggleMachineMaster()">
+        <div class="card-header">
           <div>
             <div class="card-title">Machine Master</div>
             <div class="card-sub">All registered machines</div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <input type="text" id="masterSearch" placeholder="Search…"
-              onclick="event.stopPropagation()"
-              oninput="renderMachineMaster()"
-              style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
-                     padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:140px">
-            <span id="masterToggleIcon" style="color:var(--muted);font-size:14px">▼</span>
-          </div>
+          <input type="text" id="masterSearch" placeholder="Search…"
+            oninput="renderMachineMaster()"
+            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+                   padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:140px">
         </div>
-        <div id="machineMasterWrap" style="display:none;margin-top:10px">
-          <div class="table-wrap" style="max-height:320px;overflow-y:auto;overflow-x:auto">
-            <table id="machineMasterTable">
-              <thead>
-                <tr>
-                  <th>Machine ID</th>
-                  <th>Site</th>
-                  <th>Description</th>
-                  <th>Make</th>
-                  <th>Model</th>
-                </tr>
-              </thead>
-              <tbody id="machineMasterBody"></tbody>
-            </table>
-          </div>
+        <div style="max-height:320px;overflow-y:auto;overflow-x:auto;margin-top:10px">
+          <table id="machineMasterTable">
+            <thead>
+              <tr>
+                <th>Machine ID</th>
+                <th>Site</th>
+                <th>Description</th>
+                <th>Make</th>
+                <th>Model</th>
+              </tr>
+            </thead>
+            <tbody id="machineMasterBody"></tbody>
+          </table>
         </div>
       </div>
 
@@ -1018,6 +1012,7 @@ function renderAll() {
   renderSiteHours();
   renderSiteUtil();
   renderIdleMachines();
+  renderMachineMaster();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1421,13 +1416,9 @@ function renderIdleMachines() {
 // ══════════════════════════════════════════════════════════
 // Machine Master
 // ══════════════════════════════════════════════════════════
-let masterOpen = false;
+let masterOpen = true;
 
-function toggleMachineMaster() {
-  masterOpen = !masterOpen;
-  document.getElementById("machineMasterWrap").style.display = masterOpen ? "block" : "none";
-  document.getElementById("masterToggleIcon").textContent = masterOpen ? "▲" : "▼";
-  if (masterOpen) renderMachineMaster();
+function toggleMachineMaster() {} // no-op, kept for safety
 }
 
 function renderMachineMaster() {
