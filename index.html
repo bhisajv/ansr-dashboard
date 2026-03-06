@@ -431,6 +431,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-right: 4px;
   }
 
   .site-name {
@@ -749,7 +750,7 @@
             <div class="card-sub">Absolute hours per site</div>
           </div>
         </div>
-        <div class="site-list" id="siteHours" style="max-height:320px;overflow-y:auto;padding-right:2px"></div>
+        <div class="site-list" id="siteHours" style="max-height:320px;overflow-y:auto;padding-right:12px"></div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -765,7 +766,7 @@
             </select>
           </div>
         </div>
-        <div class="site-list" id="siteUtil" style="max-height:320px;overflow-y:auto;padding-right:2px"></div>
+        <div class="site-list" id="siteUtil" style="max-height:320px;overflow-y:auto;padding-right:12px"></div>
       </div>
     </div>
 
@@ -1367,12 +1368,12 @@ function renderSiteHours() {
       `<div class="site-row-top">` +
         `<span class="site-name" title="${name}">${shortName}</span>` +
         `<div style="display:flex;align-items:center;gap:4px">` +
-          `<button class="site-collapse-btn" onclick="toggleSiteBreakdown('${uid}', this)" title="Toggle breakdown">${chevron}</button>` +
+          `<button class="site-collapse-btn collapsed" onclick="toggleSiteBreakdown('${uid}', this)" title="Toggle breakdown">${chevron}</button>` +
           `<span class="site-hrs">${hrs.toFixed(1)}h</span>` +
         `</div>` +
       `</div>` +
       `<div class="progress-track"><div class="progress-fill" style="width:${(hrs/max*100).toFixed(1)}%;background:${color}"></div></div>` +
-      `<div id="${uid}" style="margin-top:6px;display:flex;flex-direction:column;gap:2px">${machineRows}</div>` +
+      `<div id="${uid}" style="margin-top:6px;display:none;flex-direction:column;gap:2px">${machineRows}</div>` +
     `</div>`;
   }).join("") || "<div style=\"color:var(--muted);font-size:12px;padding:8px 0\">No data for this period</div>";
 }
