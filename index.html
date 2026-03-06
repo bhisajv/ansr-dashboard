@@ -463,11 +463,11 @@
 
   /* ── Machine Master Table ── */
   .table-wrap {
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: auto;
     max-height: 320px;
   }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 420px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 0; }
   thead th {
     text-align: left;
     padding: 8px 10px;
@@ -571,6 +571,10 @@
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--subtle); }
 
+  /* Prevent any horizontal overflow at page level */
+  html, body { overflow-x: hidden; }
+  .shell { overflow-x: hidden; }
+
   /* ── Responsive ── */
   @media (max-width: 1100px) {
     .kpi-grid { grid-template-columns: repeat(3, 1fr); }
@@ -592,6 +596,10 @@
     canvas { max-height: 220px !important; }
     .site-grid { grid-template-columns: 1fr !important; }
     .idle-grid { grid-template-columns: 1fr 1fr !important; }
+    /* Hide less critical columns on small screens */
+    .col-make, .col-model { display: none; }
+    /* Machine ID wraps instead of overflowing */
+    .td-code { word-break: break-all; max-width: 100px; }
   }
 
   @media (max-width: 400px) {
@@ -621,7 +629,7 @@
   <!-- ── Header ── -->
   <header class="header">
     <div class="header-left">
-      <div class="logo-mark">SILA</div>
+      <div class="logo-mark">Sila</div>
       <div>
         <div class="header-title">ANSR Dashboard</div>
         <div class="header-subtitle">Real-time usage tracking across all sites</div>
@@ -770,15 +778,15 @@
             style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
                    padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:140px">
         </div>
-        <div style="max-height:320px;overflow-y:auto;overflow-x:auto;margin-top:10px">
+        <div style="max-height:320px;overflow-y:auto;overflow-x:hidden;margin-top:10px">
           <table id="machineMasterTable">
             <thead>
               <tr>
                 <th>Machine ID</th>
                 <th>Site</th>
                 <th>Description</th>
-                <th>Make</th>
-                <th>Model</th>
+                <th class="col-make">Make</th>
+                <th class="col-model">Model</th>
               </tr>
             </thead>
             <tbody id="machineMasterBody"></tbody>
@@ -1445,8 +1453,8 @@ function renderMachineMaster() {
       <td class="td-code">${m.machineId}</td>
       <td class="td-site" title="${m.siteName}">${shortSite}</td>
       <td>${m.machineDesc}</td>
-      <td style="color:var(--muted);font-size:11px">${m.make || '—'}</td>
-      <td style="font-family:var(--mono);font-size:11px">${m.model || '—'}</td>
+      <td style="color:var(--muted);font-size:11px" class="col-make">${m.make || '—'}</td>
+      <td style="font-family:var(--mono);font-size:11px" class="col-model">${m.model || '—'}</td>
     </tr>`;
   }).join("") || `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No machines found</td></tr>`;
 }
