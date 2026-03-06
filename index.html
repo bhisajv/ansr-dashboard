@@ -553,16 +553,13 @@
     font-weight: 500;
   }
 
-  /* 4-card grid row */
+  /* Side-by-side bottom row */
   .bottom-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-top: 12px;
     align-items: start;
-  }
-  @media (max-width: 1200px) {
-    .bottom-row { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 800px) {
     .bottom-row { grid-template-columns: 1fr; }
@@ -743,8 +740,8 @@
       </div>
     </div>
 
-    <!-- Row 2+3: All 4 cards in one grid -->
-    <div class="bottom-row" style="margin-top:12px">
+    <!-- Row 2: Site Hours + Site Utilisation % side by side -->
+    <div class="charts-row half" style="margin-top:12px">
       <div class="card">
         <div class="card-header">
           <div>
@@ -770,6 +767,10 @@
         </div>
         <div class="site-list" id="siteUtil" style="max-height:320px;overflow-y:auto;padding-right:2px"></div>
       </div>
+    </div>
+
+    <!-- Row 3: Idle Machines + Machine Master side by side -->
+    <div class="bottom-row">
 
       <!-- Idle Machines -->
       <div class="card">
