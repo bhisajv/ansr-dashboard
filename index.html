@@ -553,17 +553,38 @@
     font-weight: 500;
   }
 
-  /* Side-by-side bottom row */
+  /* 4-card grid row */
   .bottom-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 12px;
     margin-top: 12px;
     align-items: start;
   }
+  @media (max-width: 1200px) {
+    .bottom-row { grid-template-columns: 1fr 1fr; }
+  }
   @media (max-width: 800px) {
     .bottom-row { grid-template-columns: 1fr; }
   }
+  .site-collapse-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 0 2px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .site-collapse-btn:hover { color: var(--text); }
+  .site-collapse-btn svg {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s;
+  }
+  .site-collapse-btn.collapsed svg { transform: rotate(-90deg); }
 
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -722,8 +743,8 @@
       </div>
     </div>
 
-    <!-- Row 2: Site Hours + Site Utilisation % side by side -->
-    <div class="charts-row half" style="margin-top:12px">
+    <!-- Row 2+3: All 4 cards in one grid -->
+    <div class="bottom-row" style="margin-top:12px">
       <div class="card">
         <div class="card-header">
           <div>
@@ -731,7 +752,7 @@
             <div class="card-sub">Absolute hours per site</div>
           </div>
         </div>
-        <div class="site-list" id="siteHours"></div>
+        <div class="site-list" id="siteHours" style="max-height:320px;overflow-y:auto;padding-right:2px"></div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -747,12 +768,8 @@
             </select>
           </div>
         </div>
-        <div class="site-list" id="siteUtil"></div>
+        <div class="site-list" id="siteUtil" style="max-height:320px;overflow-y:auto;padding-right:2px"></div>
       </div>
-    </div>
-
-    <!-- Row 3: Idle Machines + Machine Master side by side -->
-    <div class="bottom-row">
 
       <!-- Idle Machines -->
       <div class="card">
@@ -1313,7 +1330,6 @@ function renderSiteHours() {
   const siteNameMap = {};
   allSessions.forEach(s => { siteNameMap[s.siteCode] = s.siteName; });
 
-  // Build site totals AND per-machine breakdown
   const siteHours = {};
   const siteMachineHours = {};
   filteredSessions.forEach(s => {
@@ -1329,10 +1345,13 @@ function renderSiteHours() {
   const max = sorted.length ? sorted[0][1] : 1;
   const colors = ["#2dd4bf","#4ade80","#fbbf24","#60a5fa","#f87171","#a78bfa","#fb923c"];
 
+  const chevron = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+
   document.getElementById("siteHours").innerHTML = sorted.map(([code, hrs], i) => {
     const name = siteNameMap[code] || code;
     const shortName = name.replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
     const color = colors[i % colors.length];
+    const uid = "site-" + code.replace(/[^a-z0-9]/gi,"");
 
     const machineRows = Object.entries(siteMachineHours[code] || {})
       .sort((a, b) => b[1].hrs - a[1].hrs)
@@ -1346,12 +1365,23 @@ function renderSiteHours() {
     return `<div class="site-row">` +
       `<div class="site-row-top">` +
         `<span class="site-name" title="${name}">${shortName}</span>` +
-        `<span class="site-hrs">${hrs.toFixed(1)}h</span>` +
+        `<div style="display:flex;align-items:center;gap:4px">` +
+          `<button class="site-collapse-btn" onclick="toggleSiteBreakdown('${uid}', this)" title="Toggle breakdown">${chevron}</button>` +
+          `<span class="site-hrs">${hrs.toFixed(1)}h</span>` +
+        `</div>` +
       `</div>` +
       `<div class="progress-track"><div class="progress-fill" style="width:${(hrs/max*100).toFixed(1)}%;background:${color}"></div></div>` +
-      `<div style="margin-top:6px;display:flex;flex-direction:column;gap:2px">${machineRows}</div>` +
+      `<div id="${uid}" style="margin-top:6px;display:flex;flex-direction:column;gap:2px">${machineRows}</div>` +
     `</div>`;
   }).join("") || "<div style=\"color:var(--muted);font-size:12px;padding:8px 0\">No data for this period</div>";
+}
+
+function toggleSiteBreakdown(uid, btn) {
+  const el = document.getElementById(uid);
+  if (!el) return;
+  const isHidden = el.style.display === "none";
+  el.style.display = isHidden ? "flex" : "none";
+  btn.classList.toggle("collapsed", !isHidden);
 }
 function renderSiteUtil() {
   const siteMachineCount = {};
