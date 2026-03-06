@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANSR Dashboard</title>
+<title>ANSR Sites Machine Usage Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -623,7 +623,7 @@
     <div class="header-left">
       <div class="logo-mark">SILA</div>
       <div>
-        <div class="header-title">ANSR Sites Machine Usage Dashboard</div>
+        <div class="header-title">ANSR Dashboard</div>
         <div class="header-subtitle">Real-time usage tracking across all sites</div>
       </div>
     </div>
@@ -793,9 +793,22 @@
 
 <script>
 // ══════════════════════════════════════════════════════════
-// CONFIG — paste your Apps Script Web App URL here
+// CONFIG — Supabase
 // ══════════════════════════════════════════════════════════
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIgvy3Av3PSTkG9IuHot6vPw6Xykx1FGKtwm3pAuRUobp97sGwzWNPP15ojrXGJdrk/exec";
+const SUPABASE_URL = 'https://ihpabujipwvbodbzimqp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlocGFidWppcHd2Ym9kYnppbXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Njc1MzUsImV4cCI6MjA4ODM0MzUzNX0.11qVQSXcGTvZqW5dErGQCy-sOqy2WrybesGR5-ysCKE';
+
+async function supabaseFetch(table, params = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+  return res.json();
+}
 
 // ══════════════════════════════════════════════════════════
 // State
@@ -820,7 +833,6 @@ function toggleTheme() {
   if (allSessions.length > 0) renderAll();
 }
 
-// Apply saved theme on load
 (function() {
   try {
     const saved = localStorage.getItem('dashTheme');
@@ -830,45 +842,13 @@ function toggleTheme() {
     }
   } catch(e) {}
 })();
+
 let autoRefreshTimer = null;
 let isFirstLoad = true;
 
 function scheduleAutoRefresh() {
   if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-  autoRefreshTimer = setInterval(() => {
-    loadData(true); // silent refresh — don't show skeleton
-  }, 60000); // every 60 seconds
-}
-
-async function fetchWithRetry(retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const data = await new Promise((resolve, reject) => {
-        const callbackName = 'ansrCb_' + Date.now();
-        const script = document.createElement('script');
-        const timer = setTimeout(() => {
-          delete window[callbackName];
-          if (document.body.contains(script)) document.body.removeChild(script);
-          reject(new Error('Timeout on attempt ' + attempt));
-        }, 15000);
-        window[callbackName] = (data) => {
-          clearTimeout(timer);
-          delete window[callbackName];
-          if (document.body.contains(script)) document.body.removeChild(script);
-          resolve(data);
-        };
-        script.src = `${APPS_SCRIPT_URL}?callback=${callbackName}&t=${Date.now()}`;
-        script.onerror = () => { clearTimeout(timer); reject(new Error('Script load failed')); };
-        document.body.appendChild(script);
-      });
-      if (data && data.sessions) return data;
-      throw new Error('Invalid data structure');
-    } catch(err) {
-      if (attempt === retries) throw err;
-      // Exponential backoff: 2s, 4s, 8s
-      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
-    }
-  }
+  autoRefreshTimer = setInterval(() => loadData(true), 30000);
 }
 
 async function loadData(silent = false) {
@@ -879,18 +859,44 @@ async function loadData(silent = false) {
   }
 
   try {
-    const data = await fetchWithRetry(3);
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    const cutoff = ninetyDaysAgo.toISOString().split('T')[0];
 
-    allSessions = data.sessions || [];
-    allMachines = data.machines || [];
+    const [rawSessions, rawMachines] = await Promise.all([
+      supabaseFetch('sessions', `working_date=gte.${cutoff}&select=machine_id,site_code,site_name,machine_desc,staff_name,working_date,start_time,stop_time,duration_hrs,night_shift&order=working_date.desc&limit=5000`),
+      supabaseFetch('machines', `select=machine_id,site_code,site_name,machine_desc,make,model&order=site_code.asc`)
+    ]);
+
+    allSessions = rawSessions
+      .filter(s => s.duration_hrs !== null)
+      .map(s => ({
+        machineId:   s.machine_id,
+        siteCode:    s.site_code,
+        siteName:    s.site_name,
+        machineDesc: s.machine_desc,
+        staffName:   s.staff_name,
+        date:        s.working_date,
+        startTime:   s.start_time,
+        stopTime:    s.stop_time,
+        duration:    parseFloat(s.duration_hrs) || 0,
+        nightShift:  s.night_shift
+      }));
+
+    allMachines = rawMachines.map(m => ({
+      machineId:   m.machine_id,
+      siteCode:    m.site_code,
+      siteName:    m.site_name,
+      machineDesc: m.machine_desc,
+      make:        m.make,
+      model:       m.model
+    }));
 
     populateFilters();
     renderAll();
 
-    const lu = data.lastUpdated ? new Date(data.lastUpdated) : new Date();
     document.getElementById("lastUpdated").textContent =
-      lu.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
+      new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     document.getElementById("loadingState").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
     document.getElementById("errorState").style.display = "none";
@@ -906,11 +912,10 @@ async function loadData(silent = false) {
       document.getElementById("dashboard").style.display = "none";
       const errEl = document.getElementById("errorState");
       errEl.style.display = "block";
-      errEl.innerHTML = `⚠ Failed to load data after 3 attempts: ${err.message}<br>
-        <small style="opacity:0.7">Check your Apps Script URL or network connection</small><br><br>
+      errEl.innerHTML = `⚠ Failed to load data: ${err.message}<br>
+        <small style="opacity:0.7">Check your internet connection</small><br><br>
         <button onclick="loadData()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px">↻ Retry</button>`;
     }
-    // On silent refresh failure, keep showing existing data — don't disrupt the user
   }
 }
 
@@ -1446,9 +1451,6 @@ function renderMachineMaster() {
   }).join("") || `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No machines found</td></tr>`;
 }
 
-// ══════════════════════════════════════════════════════════
-// Init
-// ══════════════════════════════════════════════════════════
 loadData();
 </script>
 </body>
