@@ -1337,9 +1337,9 @@ function renderSiteHours() {
     const machineRows = Object.entries(siteMachineHours[code] || {})
       .sort((a, b) => b[1].hrs - a[1].hrs)
       .map(([mid, d]) =>
-        `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0 3px 10px;border-left:2px solid ${color}33">` +
-        `<span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${mid} · ${d.desc}</span>` +
-        `<span style="font-size:10px;font-weight:500;color:var(--muted);font-family:var(--mono)">${d.hrs.toFixed(1)}h</span>` +
+        `<div style="display:flex;align-items:center;gap:8px;padding:3px 0 3px 10px;border-left:2px solid ${color}33">` +
+        `<span style="font-size:10px;color:var(--muted);font-family:var(--mono);flex:1;min-width:0">${mid} · ${d.desc}</span>` +
+        `<span style="font-size:10px;font-weight:500;color:var(--muted);font-family:var(--mono);flex-shrink:0">${d.hrs.toFixed(1)}h</span>` +
         `</div>`
       ).join("");
 
