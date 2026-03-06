@@ -631,7 +631,7 @@
     <div class="header-left">
       <div class="logo-mark">SILA</div>
       <div>
-        <div class="header-title">ANSR Machine Usage Dashboard</div>
+        <div class="header-title">ANSR Sites Machine Usage Dashboard</div>
         <div class="header-subtitle">Real-time usage tracking across all sites</div>
       </div>
     </div>
@@ -1313,9 +1313,16 @@ function renderSiteHours() {
   const siteNameMap = {};
   allSessions.forEach(s => { siteNameMap[s.siteCode] = s.siteName; });
 
+  // Build site totals AND per-machine breakdown
   const siteHours = {};
+  const siteMachineHours = {};
   filteredSessions.forEach(s => {
     siteHours[s.siteCode] = (siteHours[s.siteCode] || 0) + s.duration;
+    if (!siteMachineHours[s.siteCode]) siteMachineHours[s.siteCode] = {};
+    if (!siteMachineHours[s.siteCode][s.machineId]) {
+      siteMachineHours[s.siteCode][s.machineId] = { hrs: 0, desc: s.machineDesc };
+    }
+    siteMachineHours[s.siteCode][s.machineId].hrs += s.duration;
   });
 
   const sorted = Object.entries(siteHours).sort((a, b) => b[1] - a[1]);
@@ -1324,23 +1331,28 @@ function renderSiteHours() {
 
   document.getElementById("siteHours").innerHTML = sorted.map(([code, hrs], i) => {
     const name = siteNameMap[code] || code;
-    const shortName = name.replace(/^ANSR\s*[–-]\s*/i,'').replace(/^ANSR\s+/i,'');
-    return `
-    <div class="site-row">
-      <div class="site-row-top">
-        <span class="site-name" title="${name}">${shortName}</span>
-        <span class="site-hrs">${hrs.toFixed(1)}h</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" style="width:${(hrs/max*100).toFixed(1)}%;background:${colors[i%colors.length]}"></div>
-      </div>
-    </div>`;
-  }).join("") || '<div style="color:var(--muted);font-size:12px;padding:8px 0">No data for this period</div>';
-}
+    const shortName = name.replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
+    const color = colors[i % colors.length];
 
-// ══════════════════════════════════════════════════════════
-// Site Utilisation (% of max possible)
-// ══════════════════════════════════════════════════════════
+    const machineRows = Object.entries(siteMachineHours[code] || {})
+      .sort((a, b) => b[1].hrs - a[1].hrs)
+      .map(([mid, d]) =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0 3px 10px;border-left:2px solid ${color}33">` +
+        `<span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${mid}</span>` +
+        `<span style="font-size:10px;font-weight:500;color:var(--muted);font-family:var(--mono)">${d.hrs.toFixed(1)}h</span>` +
+        `</div>`
+      ).join("");
+
+    return `<div class="site-row">` +
+      `<div class="site-row-top">` +
+        `<span class="site-name" title="${name}">${shortName}</span>` +
+        `<span class="site-hrs">${hrs.toFixed(1)}h</span>` +
+      `</div>` +
+      `<div class="progress-track"><div class="progress-fill" style="width:${(hrs/max*100).toFixed(1)}%;background:${color}"></div></div>` +
+      `<div style="margin-top:6px;display:flex;flex-direction:column;gap:2px">${machineRows}</div>` +
+    `</div>`;
+  }).join("") || "<div style=\"color:var(--muted);font-size:12px;padding:8px 0\">No data for this period</div>";
+}
 function renderSiteUtil() {
   const siteMachineCount = {};
   allMachines.forEach(m => {
@@ -1400,32 +1412,37 @@ function renderSiteUtil() {
 // Idle Machines
 // ══════════════════════════════════════════════════════════
 function renderIdleMachines() {
-  const usedIds = new Set(filteredSessions.map(s => s.machineId));
-  const idle = allMachines.filter(m => !usedIds.has(m.machineId));
+  const siteFilter = document.getElementById("siteFilter").value;
 
-  document.getElementById("idleBadge").textContent = `${idle.length} Idle`;
+  // Filter machine master to selected site first
+  const siteMachines = siteFilter
+    ? allMachines.filter(m => m.siteCode === siteFilter)
+    : allMachines;
+
+  const usedIds = new Set(filteredSessions.map(s => s.machineId));
+  const idle = siteMachines.filter(m => !usedIds.has(m.machineId));
+
+  document.getElementById("idleBadge").textContent = idle.length + " Idle";
 
   if (idle.length === 0) {
-    document.getElementById("idleList").innerHTML = `
-      <div class="all-active">
-        <span style="color:var(--green);font-size:16px">✓</span>
-        All machines active in this period
-      </div>`;
+    document.getElementById("idleList").innerHTML =
+      "<div class=\"all-active\">" +
+        "<span style=\"color:var(--green);font-size:16px\">\u2713</span>" +
+        "All machines active in this period" +
+      "</div>";
   } else {
     document.getElementById("idleList").innerHTML = idle.map(m => {
-      const shortName = m.siteName.replace(/^ANSR\s*[–-]\s*/i,'').replace(/^ANSR\s+/i,'');
-      return `
-      <div class="idle-item">
-        <div>
-          <div class="idle-machine">${m.machineId}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">${shortName} · ${m.machineDesc}</div>
-        </div>
-        <span class="idle-days">Idle</span>
-      </div>`;
+      const shortName = m.siteName.replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
+      return "<div class=\"idle-item\">" +
+        "<div>" +
+          "<div class=\"idle-machine\">" + m.machineId + "</div>" +
+          "<div style=\"font-size:10px;color:var(--muted);margin-top:2px\">" + shortName + " \u00b7 " + m.machineDesc + "</div>" +
+        "</div>" +
+        "<span class=\"idle-days\">Idle</span>" +
+      "</div>";
     }).join("");
   }
 }
-
 // ══════════════════════════════════════════════════════════
 // Machine Master
 // ══════════════════════════════════════════════════════════
@@ -1435,30 +1452,35 @@ function toggleMachineMaster() {} // no-op, kept for safety
 
 function renderMachineMaster() {
   const q = (document.getElementById("masterSearch")?.value || "").toLowerCase();
-  const filtered = allMachines.filter(m =>
-    !q ||
-    m.machineId.toLowerCase().includes(q) ||
-    m.siteName.toLowerCase().includes(q) ||
-    m.machineDesc.toLowerCase().includes(q) ||
-    m.make.toLowerCase().includes(q) ||
-    m.model.toLowerCase().includes(q)
-  );
+  const siteFilter = document.getElementById("siteFilter").value;
+
+  const filtered = allMachines.filter(m => {
+    // Respect site filter
+    if (siteFilter && m.siteCode !== siteFilter) return false;
+    // Respect search query
+    if (q) {
+      return m.machineId.toLowerCase().includes(q) ||
+             m.siteName.toLowerCase().includes(q) ||
+             m.machineDesc.toLowerCase().includes(q) ||
+             (m.make || "").toLowerCase().includes(q) ||
+             (m.model || "").toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   const sorted = [...filtered].sort((a, b) => a.siteCode.localeCompare(b.siteCode));
 
   document.getElementById("machineMasterBody").innerHTML = sorted.map(m => {
-    const shortSite = m.siteName.replace(/^ANSR\s*[–-]\s*/i,'').replace(/^ANSR\s+/i,'').replace(/^Ansr\s+/i,'');
-    return `
-    <tr>
-      <td class="td-code">${m.machineId}</td>
-      <td class="td-site" title="${m.siteName}">${shortSite}</td>
-      <td>${m.machineDesc}</td>
-      <td style="color:var(--muted);font-size:11px" class="col-make">${m.make || '—'}</td>
-      <td style="font-family:var(--mono);font-size:11px" class="col-model">${m.model || '—'}</td>
-    </tr>`;
-  }).join("") || `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No machines found</td></tr>`;
+    const shortSite = m.siteName.replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"").replace(/^Ansr\s+/i,"");
+    return "<tr>" +
+      "<td class=\"td-code\">" + m.machineId + "</td>" +
+      "<td class=\"td-site\" title=\"" + m.siteName + "\">" + shortSite + "</td>" +
+      "<td>" + m.machineDesc + "</td>" +
+      "<td style=\"color:var(--muted);font-size:11px\" class=\"col-make\">" + (m.make || "—") + "</td>" +
+      "<td style=\"font-family:var(--mono);font-size:11px\" class=\"col-model\">" + (m.model || "—") + "</td>" +
+    "</tr>";
+  }).join("") || "<tr><td colspan=\"5\" style=\"text-align:center;padding:20px;color:var(--muted)\">No machines found</td></tr>";
 }
-
 loadData();
 </script>
 </body>
