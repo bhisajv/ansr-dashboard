@@ -815,6 +815,34 @@
 
     </div><!-- /.bottom-row -->
 
+    <!-- Row 4: Flagged Machines -->
+    <div style="margin-top:12px">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flagged Machines</div>
+            <div class="card-sub">Reported as not working — pending inspection</div>
+          </div>
+          <span class="card-badge" id="flaggedBadge" style="background:rgba(239,68,68,0.12);color:#ef4444">0 Issues</span>
+        </div>
+        <div style="max-height:320px;overflow-y:auto;overflow-x:hidden;margin-top:10px">
+          <table id="flaggedTable">
+            <thead>
+              <tr>
+                <th>Machine ID</th>
+                <th>Site</th>
+                <th>Description</th>
+                <th class="col-make">Make</th>
+                <th class="col-model">Model</th>
+                <th>Reported At</th>
+              </tr>
+            </thead>
+            <tbody id="flaggedTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /#dashboard -->
 </div><!-- /.shell -->
 
@@ -842,6 +870,7 @@ async function supabaseFetch(table, params = '') {
 // ══════════════════════════════════════════════════════════
 let allSessions = [];
 let allMachines = [];
+let allFlagged = [];
 let filteredSessions = [];
 let currentPeriod = "month";
 let customFrom = null;
@@ -890,9 +919,10 @@ async function loadData(silent = false) {
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     const cutoff = ninetyDaysAgo.toISOString().split('T')[0];
 
-    const [rawSessions, rawMachines] = await Promise.all([
+    const [rawSessions, rawMachines, rawFlagged] = await Promise.all([
       supabaseFetch('sessions', `working_date=gte.${cutoff}&select=machine_id,site_code,site_name,machine_desc,staff_name,working_date,start_time,stop_time,duration_hrs,night_shift&order=working_date.desc&limit=5000`),
-      supabaseFetch('machines', `select=machine_id,site_code,site_name,machine_desc,make,model&order=site_code.asc`)
+      supabaseFetch('machines', `select=machine_id,site_code,site_name,machine_desc,make,model&order=site_code.asc`),
+      supabaseFetch('flagged_machines', `resolved=eq.false&select=machine_id,site_name,machine_desc,make,model,reported_at&order=reported_at.desc`)
     ]);
 
     allSessions = rawSessions
@@ -917,6 +947,15 @@ async function loadData(silent = false) {
       machineDesc: m.machine_desc,
       make:        m.make,
       model:       m.model
+    }));
+
+    allFlagged = rawFlagged.map(f => ({
+      machineId:   f.machine_id,
+      siteName:    f.site_name,
+      machineDesc: f.machine_desc,
+      make:        f.make,
+      model:       f.model,
+      reportedAt:  f.reported_at
     }));
 
     populateFilters();
@@ -1045,6 +1084,7 @@ function renderAll() {
   renderSiteUtil();
   renderIdleMachines();
   renderMachineMaster();
+  renderFlaggedMachines();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1055,7 +1095,7 @@ function renderKPIs() {
   const totalHrs = sessions.reduce((a, s) => a + s.duration, 0);
   const activeMachines = new Set(sessions.map(s => s.machineId)).size;
   const sessionCount = sessions.length;
-  const avgSession = sessionCount > 0 ? totalHrs / sessionCount : 0;
+  const flaggedCount = allFlagged.length;
 
   // Idle: machines not in filtered sessions
   const usedMachines = new Set(sessions.map(s => s.machineId));
@@ -1087,12 +1127,12 @@ function renderKPIs() {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>`
     },
     {
-      label: "Avg Session",
-      value: avgSession.toFixed(2),
-      unit: " hrs",
-      sub: "per session",
-      cls: "highlight-amber",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`
+      label: "Flagged Machines",
+      value: flaggedCount,
+      unit: " issues",
+      sub: flaggedCount === 0 ? "All machines operational" : "reported not working",
+      cls: flaggedCount > 0 ? "highlight-red" : "highlight-green",
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
     },
     {
       label: "Idle Machines",
@@ -1513,6 +1553,37 @@ function renderMachineMaster() {
     "</tr>";
   }).join("") || "<tr><td colspan=\"5\" style=\"text-align:center;padding:20px;color:var(--muted)\">No machines found</td></tr>";
 }
+
+// ══════════════════════════════════════════════════════════
+// Flagged Machines
+// ══════════════════════════════════════════════════════════
+function renderFlaggedMachines() {
+  const count = allFlagged.length;
+  const badge = document.getElementById("flaggedBadge");
+  if (badge) {
+    badge.textContent = count + " Issue" + (count !== 1 ? "s" : "");
+    badge.style.background = count > 0 ? "rgba(239,68,68,0.12)" : "rgba(34,197,94,0.12)";
+    badge.style.color = count > 0 ? "#ef4444" : "#22c55e";
+  }
+
+  document.getElementById("flaggedTableBody").innerHTML = allFlagged.length > 0
+    ? allFlagged.map(f => {
+        const shortSite = (f.siteName || "").replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
+        const reportedDate = f.reportedAt
+          ? new Date(f.reportedAt).toLocaleString("en-IN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" })
+          : "—";
+        return "<tr style=\"background:rgba(239,68,68,0.04)\">" +
+          "<td class=\"td-code\" style=\"color:#ef4444;font-weight:600\">" + f.machineId + "</td>" +
+          "<td class=\"td-site\" title=\"" + (f.siteName||"") + "\">" + shortSite + "</td>" +
+          "<td>" + (f.machineDesc || "—") + "</td>" +
+          "<td style=\"color:var(--muted);font-size:11px\" class=\"col-make\">" + (f.make || "—") + "</td>" +
+          "<td style=\"font-family:var(--mono);font-size:11px\" class=\"col-model\">" + (f.model || "—") + "</td>" +
+          "<td style=\"color:#ef4444;font-size:11px;white-space:nowrap\">" + reportedDate + "</td>" +
+        "</tr>";
+      }).join("")
+    : "<tr><td colspan=\"6\" style=\"text-align:center;padding:20px;color:var(--muted)\">No flagged machines — all operational ✓</td></tr>";
+}
+
 loadData();
 </script>
 </body>
