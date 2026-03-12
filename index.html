@@ -687,7 +687,7 @@
       <input class="date-input" type="date" id="dateTo" onchange="applyCustomRange()">
     </div>
     <div class="filter-sep"></div>
-    <select class="filter-select" id="siteFilter" onchange="renderAll()">
+    <select class="filter-select" id="siteFilter" onchange="updateMachineDropdown(); renderAll()">
       <option value="">All Sites</option>
     </select>
     <select class="filter-select" id="machineFilter" onchange="renderAll()">
@@ -922,7 +922,7 @@ async function loadData(silent = false) {
     const [rawSessions, rawMachines, rawFlagged] = await Promise.all([
       supabaseFetch('sessions', `working_date=gte.${cutoff}&select=machine_id,site_code,site_name,machine_desc,staff_name,working_date,start_time,stop_time,duration_hrs,night_shift&order=working_date.desc&limit=5000`),
       supabaseFetch('machines', `select=machine_id,site_code,site_name,machine_desc,make,model&order=site_code.asc`),
-      supabaseFetch('flagged_machines', `resolved=eq.false&select=machine_id,site_name,machine_desc,make,model,reported_at&order=reported_at.desc`)
+      supabaseFetch('flagged_machines', `resolved=eq.false&select=machine_id,site_code,site_name,machine_desc,make,model,reported_at,working_date&order=reported_at.desc`)
     ]);
 
     allSessions = rawSessions
@@ -951,11 +951,13 @@ async function loadData(silent = false) {
 
     allFlagged = rawFlagged.map(f => ({
       machineId:   f.machine_id,
+      siteCode:    f.site_code,
       siteName:    f.site_name,
       machineDesc: f.machine_desc,
       make:        f.make,
       model:       f.model,
-      reportedAt:  f.reported_at
+      reportedAt:  f.reported_at,
+      workingDate: f.working_date
     }));
 
     populateFilters();
@@ -1000,13 +1002,25 @@ function populateFilters() {
     .forEach(([code, name]) => {
       const o = document.createElement("option");
       o.value = code;
-      // Format: SITE3180 — ANSR RMZ
       const shortName = name.replace(/^ANSR\s*[–-]\s*/i, '').replace(/^ANSR\s+/i, '');
       o.textContent = `${code} — ${shortName}`;
       siteEl.appendChild(o);
     });
 
-  const machines = [...new Set(allSessions.map(s => s.machineId))].sort();
+  updateMachineDropdown();
+}
+
+function updateMachineDropdown() {
+  const siteFilter = document.getElementById("siteFilter").value;
+  const prevMachine = document.getElementById("machineFilter").value;
+
+  // Filter machines to selected site, or all if no site selected
+  const machines = [...new Set(
+    allSessions
+      .filter(s => !siteFilter || s.siteCode === siteFilter)
+      .map(s => s.machineId)
+  )].sort();
+
   const mEl = document.getElementById("machineFilter");
   mEl.innerHTML = '<option value="">All Machines</option>';
   machines.forEach(m => {
@@ -1015,6 +1029,11 @@ function populateFilters() {
     o.textContent = m;
     mEl.appendChild(o);
   });
+
+  // Re-select previous machine only if it's still valid for the new site
+  if (prevMachine && machines.includes(prevMachine)) {
+    mEl.value = prevMachine;
+  }
 }
 
 function setPeriod(period, btn) {
@@ -1097,6 +1116,25 @@ function renderKPIs() {
   const sessionCount = sessions.length;
   const flaggedCount = allFlagged.length;
 
+  // ── Uptime / Downtime ──
+  const [from, to] = getDateRange();
+  const machineFilter = document.getElementById("machineFilter").value;
+  const siteFilter    = document.getElementById("siteFilter").value;
+
+  // Uptime: distinct days with at least one session (already filtered by applyFilters)
+  const uptimeDays = new Set(sessions.map(s => s.date)).size;
+
+  // Downtime: distinct working_date days flagged for matching machine/site in period
+  const downtimeDays = new Set(
+    allFlagged.filter(f => {
+      if (!f.workingDate) return false;
+      if (f.workingDate < from || f.workingDate > to) return false;
+      if (machineFilter && f.machineId !== machineFilter) return false;
+      if (siteFilter && f.siteCode !== siteFilter) return false;
+      return true;
+    }).map(f => f.workingDate)
+  ).size;
+
   const kpis = [
     {
       label: "Total Usage",
@@ -1132,18 +1170,38 @@ function renderKPIs() {
     }
   ];
 
-  document.getElementById("kpiGrid").innerHTML = kpis.map(k => `
-    <div class="kpi-card ${k.cls}">
+  const uptimeDowntimeCard = `
+    <div class="kpi-card highlight-amber">
       <div class="kpi-card-top">
-        <div class="kpi-icon-wrap">${k.icon}</div>
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
       </div>
       <div class="kpi-card-body">
-        <div class="kpi-value">${k.value}<span>${k.unit}</span></div>
-        <div class="kpi-label">${k.label}</div>
-        <div class="kpi-sub">${k.sub}</div>
+        <div class="kpi-value" style="display:flex;align-items:baseline;gap:10px">
+          <span style="color:var(--green)">${uptimeDays}<span style="font-size:13px;font-weight:500;color:var(--muted)"> up</span></span>
+          <span style="font-size:18px;color:var(--border)">/</span>
+          <span style="color:#ef4444">${downtimeDays}<span style="font-size:13px;font-weight:500;color:var(--muted)"> down</span></span>
+        </div>
+        <div class="kpi-label">Uptime / Downtime</div>
+        <div class="kpi-sub">days in selected period</div>
       </div>
     </div>
-  `).join("");
+  `;
+
+  document.getElementById("kpiGrid").innerHTML =
+    kpis.map(k => `
+      <div class="kpi-card ${k.cls}">
+        <div class="kpi-card-top">
+          <div class="kpi-icon-wrap">${k.icon}</div>
+        </div>
+        <div class="kpi-card-body">
+          <div class="kpi-value">${k.value}<span>${k.unit}</span></div>
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-sub">${k.sub}</div>
+        </div>
+      </div>
+    `).join("") + uptimeDowntimeCard;
 }
 
 // ══════════════════════════════════════════════════════════
