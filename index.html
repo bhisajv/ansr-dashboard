@@ -1015,18 +1015,18 @@ function updateMachineDropdown() {
   const prevMachine = document.getElementById("machineFilter").value;
 
   // Filter machines to selected site, or all if no site selected
-  const machines = [...new Set(
-    allSessions
-      .filter(s => !siteFilter || s.siteCode === siteFilter)
-      .map(s => s.machineId)
-  )].sort();
+  const filteredSessions2 = allSessions.filter(s => !siteFilter || s.siteCode === siteFilter);
+  const machineMap = {};
+  filteredSessions2.forEach(s => { if (!machineMap[s.machineId]) machineMap[s.machineId] = s.machineDesc || ''; });
+  const machines = Object.keys(machineMap).sort();
 
   const mEl = document.getElementById("machineFilter");
   mEl.innerHTML = '<option value="">All Machines</option>';
   machines.forEach(m => {
     const o = document.createElement("option");
     o.value = m;
-    o.textContent = m;
+    const desc = machineMap[m];
+    o.textContent = desc ? `${m} — ${desc}` : m;
     mEl.appendChild(o);
   });
 
