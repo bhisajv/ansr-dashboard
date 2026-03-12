@@ -1097,10 +1097,6 @@ function renderKPIs() {
   const sessionCount = sessions.length;
   const flaggedCount = allFlagged.length;
 
-  // Idle: machines not in filtered sessions
-  const usedMachines = new Set(sessions.map(s => s.machineId));
-  const idleCount = allMachines.filter(m => !usedMachines.has(m.machineId)).length;
-
   const kpis = [
     {
       label: "Total Usage",
@@ -1132,14 +1128,6 @@ function renderKPIs() {
       unit: " issues",
       sub: flaggedCount === 0 ? "All machines operational" : "reported not working",
       cls: flaggedCount > 0 ? "highlight-red" : "highlight-green",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
-    },
-    {
-      label: "Idle Machines",
-      value: idleCount,
-      unit: " units",
-      sub: idleCount === 0 ? "All machines active" : "not used this period",
-      cls: idleCount > 0 ? "highlight-red" : "highlight-green",
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
     }
   ];
