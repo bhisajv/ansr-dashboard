@@ -1030,9 +1030,14 @@ function updateMachineDropdown() {
     mEl.appendChild(o);
   });
 
-  // Re-select previous machine only if it's still valid for the new site
-  if (prevMachine && machines.includes(prevMachine)) {
+  // Re-select previous machine only if it still exists in the new site's machine list
+  // If site was reset to All Sites or machine no longer valid → reset to All Machines
+  if (!siteFilter) {
+    mEl.value = "";
+  } else if (prevMachine && machines.includes(prevMachine)) {
     mEl.value = prevMachine;
+  } else {
+    mEl.value = "";
   }
 }
 
