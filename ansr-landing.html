@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANSR Machine Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f5f5f6;
+    --surface:  #ffffff;
+    --border:   #d4d4d8;
+    --text:     #111113;
+    --muted:    #71717a;
+    --teal:     #0d9488;
+    --teal-light: rgba(13,148,136,0.08);
+    --teal-border: rgba(13,148,136,0.25);
+    --red:      #dc2626;
+    --red-light: rgba(220,38,38,0.07);
+    --red-border: rgba(220,38,38,0.25);
+    --amber:    #d97706;
+    --amber-light: rgba(217,119,6,0.07);
+    --amber-border: rgba(217,119,6,0.25);
+    --font: 'Inter', sans-serif;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  /* Header */
+  .card-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 38px;
+    height: 38px;
+    background: #f0fdfa;
+    border: 1px solid var(--teal-border);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--teal);
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  .header-text p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Machine info pill */
+  .machine-info {
+    margin: 20px 24px 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .machine-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--teal-light);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--teal);
+    flex-shrink: 0;
+  }
+
+  .machine-icon svg { width: 16px; height: 16px; }
+
+  .machine-details {
+    min-width: 0;
+  }
+
+  .machine-id {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'DM Mono', 'Courier New', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .machine-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 20px 24px 10px;
+  }
+
+  /* Action buttons */
+  .actions {
+    padding: 0 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    background: var(--surface);
+    width: 100%;
+  }
+
+  .action-btn:active { transform: scale(0.98); }
+
+  .action-btn:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+
+  /* Log Usage — teal */
+  .btn-usage {
+    background: var(--teal-light);
+    border-color: var(--teal-border);
+  }
+
+  .btn-usage:hover { background: rgba(13,148,136,0.13); }
+
+  .btn-usage .btn-icon { background: var(--teal); }
+
+  .btn-usage .btn-title { color: var(--teal); }
+
+  /* Report Issue — red */
+  .btn-report {
+    background: var(--red-light);
+    border-color: var(--red-border);
+  }
+
+  .btn-report:hover { background: rgba(220,38,38,0.11); }
+
+  .btn-report .btn-icon { background: var(--red); }
+
+  .btn-report .btn-title { color: var(--red); }
+
+  /* Mark Resolved — amber */
+  .btn-resolve {
+    background: var(--amber-light);
+    border-color: var(--amber-border);
+  }
+
+  .btn-resolve:hover { background: rgba(217,119,6,0.11); }
+
+  .btn-resolve .btn-icon { background: var(--amber); }
+
+  .btn-resolve .btn-title { color: var(--amber); }
+
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  .btn-icon svg { width: 18px; height: 18px; }
+
+  .btn-text { flex: 1; min-width: 0; }
+
+  .btn-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+  }
+
+  .btn-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .btn-arrow {
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .btn-arrow svg { width: 16px; height: 16px; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 24px 14px;
+  }
+
+  /* Footer */
+  .card-footer {
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .card-footer span {
+    color: var(--teal);
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Header -->
+  <div class="card-header">
+    <div class="logo-mark">SILA</div>
+    <div class="header-text">
+      <h1>ANSR Machine Portal</h1>
+      <p>Select an action for this machine</p>
+    </div>
+  </div>
+
+  <!-- Machine Info -->
+  <div class="machine-info">
+    <div class="machine-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+      </svg>
+    </div>
+    <div class="machine-details">
+      <div class="machine-id" id="machineIdDisplay">—</div>
+      <div class="machine-desc" id="machineDescDisplay">Scan a machine QR code to continue</div>
+    </div>
+  </div>
+
+  <div class="section-label">What would you like to do?</div>
+
+  <div class="actions">
+
+    <!-- Log Usage -->
+    <a class="action-btn btn-usage" id="btnUsage" href="https://docs.google.com/forms/d/e/1Fk1Mhwurd26D8KOq7SOTzYZDVEmK0C2IwWZJuEtN7WY/viewform" target="_blank">
+      <div class="btn-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <polyline points="12 7 12 12 15 15"/>
+        </svg>
+      </div>
+      <div class="btn-text">
+        <div class="btn-title">Log Usage</div>
+        <div class="btn-sub">Record a start or stop session</div>
+      </div>
+      <div class="btn-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+
+    <!-- Report Issue -->
+    <a class="action-btn btn-report" id="btnReport" href="#" target="_blank">
+      <div class="btn-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="btn-text">
+        <div class="btn-title">Report Issue</div>
+        <div class="btn-sub">Machine not working or needs attention</div>
+      </div>
+      <div class="btn-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+
+    <div class="divider"></div>
+
+    <!-- Mark Resolved -->
+    <a class="action-btn btn-resolve" id="btnResolve" href="https://docs.google.com/forms/d/e/1Fk1Mhwurd26D8KOq7SOTzYZDVEmK0C2IwWZJuEtN7WY/viewform" target="_blank">
+      <div class="btn-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="btn-text">
+        <div class="btn-title">Mark as Resolved</div>
+        <div class="btn-sub">Issue has been inspected and fixed</div>
+      </div>
+      <div class="btn-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="card-footer">
+    Powered by <span>SILA</span> · ANSR Facility Management
+  </div>
+
+</div>
+
+<script>
+  // Read machine info from URL params
+  // QR codes should point to: landing.html?id=SITE4677-CRV60-01&desc=CRV60+Double+Motor+Vacuum
+  const params = new URLSearchParams(window.location.search);
+  const machineId   = params.get('id')   || '';
+  const machineDesc = params.get('desc') || '';
+
+  const LOG_USAGE_FORM   = 'https://docs.google.com/forms/d/e/1Fk1Mhwurd26D8KOq7SOTzYZDVEmK0C2IwWZJuEtN7WY/viewform';
+  const REPORT_ISSUE_FORM = '#'; // Replace with Shaktivel's form URL
+
+  if (machineId) {
+    document.getElementById('machineIdDisplay').textContent  = machineId;
+    document.getElementById('machineDescDisplay').textContent = machineDesc || 'Machine details unavailable';
+
+    // Pre-fill machine ID into form URLs if supported
+    const usageUrl   = LOG_USAGE_FORM   + (LOG_USAGE_FORM.includes('?') ? '&' : '?') + `usp=pp_url&entry.MACHINE_ID_FIELD=${encodeURIComponent(machineId)}`;
+    const reportUrl  = REPORT_ISSUE_FORM !== '#'
+      ? REPORT_ISSUE_FORM + `?usp=pp_url&entry.MACHINE_ID_FIELD=${encodeURIComponent(machineId)}`
+      : '#';
+    const resolveUrl = LOG_USAGE_FORM   + (LOG_USAGE_FORM.includes('?') ? '&' : '?') + `usp=pp_url&entry.MACHINE_ID_FIELD=${encodeURIComponent(machineId)}`;
+
+    document.getElementById('btnUsage').href   = usageUrl;
+    document.getElementById('btnReport').href  = reportUrl;
+    document.getElementById('btnResolve').href = resolveUrl;
+  } else {
+    // No machine ID in URL — still show buttons with base form links
+    document.getElementById('btnUsage').href   = LOG_USAGE_FORM;
+    document.getElementById('btnResolve').href = LOG_USAGE_FORM;
+  }
+</script>
+
+</body>
+</html>
