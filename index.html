@@ -667,7 +667,7 @@
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
-      <div class="live-badge"><div class="live-dot"></div>Live</div>
+      <div class="live-badge" style="background:var(--surface2);border-color:var(--border)"><div class="live-dot" style="background:var(--blue);animation:none"></div>Manual</div>
       <button class="btn-refresh" onclick="loadData()">Refresh</button>
     </div>
   </header>
@@ -882,13 +882,7 @@ function toggleTheme() {
   } catch(e) {}
 })();
 
-let autoRefreshTimer = null;
 let isFirstLoad = true;
-
-function scheduleAutoRefresh() {
-  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-  autoRefreshTimer = setInterval(() => loadData(true), 30000);
-}
 
 async function loadData(silent = false) {
   if (!silent) {
@@ -954,7 +948,6 @@ async function loadData(silent = false) {
 
     if (isFirstLoad) {
       isFirstLoad = false;
-      scheduleAutoRefresh();
     }
 
   } catch(err) {
