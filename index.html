@@ -726,7 +726,6 @@
             <div class="card-title">Machine Utilisation</div>
             <div class="card-sub">Top machines by % of available hours used</div>
           </div>
-          <span class="card-badge" id="usageMachinePeriod">—</span>
         </div>
         <canvas id="chartMachine" height="200"></canvas>
       </div>
@@ -1126,8 +1125,8 @@ function renderKPIs() {
   const kpis = [
     {
       label: "Total Usage",
-      value: totalHrs.toFixed(1),
-      unit: " hrs",
+      value: new Set(sessions.map(s => s.date)).size,
+      unit: " days",
       sub: `${sessionCount} completed sessions`,
       cls: "highlight-teal",
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>`
@@ -1293,6 +1292,9 @@ function renderChartMachine() {
   );
 
   const ctx = document.getElementById("chartMachine").getContext("2d");
+  const maxVal = Math.max(...vals);
+  const yMax = Math.ceil(maxVal * 1.15); // 15% headroom above highest bar
+
   charts.machine = new Chart(ctx, {
     type: "bar",
     data: {
@@ -1312,18 +1314,20 @@ function renderChartMachine() {
         x: {
           ticks: { color: cssVar("--muted"), font: { family: "'DM Mono'", size: 10 }, maxRotation: 30, minRotation: 15 },
           grid: { display: false },
-          border: { display: false }
+          border: { display: false },
+          title: { display: true, text: "Machine", color: cssVar("--muted"), font: { family: "'Inter'", size: 11 }, padding: { top: 6 } }
         },
         y: {
           min: 0,
-          max: 100,
+          max: yMax,
           ticks: {
             color: cssVar("--muted"),
             font: { family: "'DM Mono'", size: 10 },
             callback: v => v + "%"
           },
           grid: { color: cssVar("--border") },
-          border: { display: false }
+          border: { display: false },
+          title: { display: true, text: "Utilisation %", color: cssVar("--muted"), font: { family: "'Inter'", size: 11 }, padding: { bottom: 6 } }
         }
       },
       plugins: {
