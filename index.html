@@ -741,8 +741,8 @@
       </div>
     </div>
 
-    <!-- Row 2: Site Hours + Site Utilisation % side by side -->
-    <div class="charts-row half" style="margin-top:12px">
+    <!-- Row 2: Site Usage full width -->
+    <div style="margin-top:12px">
       <div class="card">
         <div class="card-header">
           <div>
@@ -751,22 +751,6 @@
           </div>
         </div>
         <div class="site-list" id="siteHours" style="max-height:320px;overflow-y:auto;padding-right:12px"></div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Site Utilisation</div>
-            <div class="card-sub">% of max possible hours used</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:10px;color:var(--muted)">8h day</span>
-            <select class="filter-select" id="utilDayType" onchange="renderSiteUtil()" style="font-size:11px;padding:3px 22px 3px 8px">
-              <option value="working">Mon–Sat</option>
-              <option value="all">All days</option>
-            </select>
-          </div>
-        </div>
-        <div class="site-list" id="siteUtil" style="max-height:320px;overflow-y:auto;padding-right:12px"></div>
       </div>
     </div>
 
@@ -1105,7 +1089,6 @@ function renderAll() {
   renderChartMachine();
   renderChartType();
   renderSiteHours();
-  renderSiteUtil();
   renderIdleMachines();
   renderMachineMaster();
   renderFlaggedMachines();
