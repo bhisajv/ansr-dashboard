@@ -747,7 +747,7 @@
         <div class="card-header">
           <div>
             <div class="card-title">Site Usage</div>
-            <div class="card-sub">Absolute hours per site</div>
+            <div class="card-sub">Distinct days of machine activity per site</div>
           </div>
         </div>
         <div class="site-list" id="siteHours" style="max-height:320px;overflow-y:auto;padding-right:12px"></div>
@@ -1423,35 +1423,46 @@ function renderSiteHours() {
   const siteNameMap = {};
   allSessions.forEach(s => { siteNameMap[s.siteCode] = s.siteName; });
 
-  const siteHours = {};
-  const siteMachineHours = {};
+  // Site level: distinct days per site
+  const siteDays = {};
+  // Machine level: distinct days per machine per site
+  const siteMachineDays = {};
+
   filteredSessions.forEach(s => {
-    siteHours[s.siteCode] = (siteHours[s.siteCode] || 0) + s.duration;
-    if (!siteMachineHours[s.siteCode]) siteMachineHours[s.siteCode] = {};
-    if (!siteMachineHours[s.siteCode][s.machineId]) {
-      siteMachineHours[s.siteCode][s.machineId] = { hrs: 0, desc: s.machineDesc };
+    // Site days
+    if (!siteDays[s.siteCode]) siteDays[s.siteCode] = new Set();
+    siteDays[s.siteCode].add(s.date);
+
+    // Machine days
+    if (!siteMachineDays[s.siteCode]) siteMachineDays[s.siteCode] = {};
+    if (!siteMachineDays[s.siteCode][s.machineId]) {
+      siteMachineDays[s.siteCode][s.machineId] = { days: new Set(), desc: s.machineDesc };
     }
-    siteMachineHours[s.siteCode][s.machineId].hrs += s.duration;
+    siteMachineDays[s.siteCode][s.machineId].days.add(s.date);
   });
 
-  const sorted = Object.entries(siteHours).sort((a, b) => b[1] - a[1]);
+  // Convert sets to counts
+  const siteDayCounts = Object.fromEntries(
+    Object.entries(siteDays).map(([code, set]) => [code, set.size])
+  );
+
+  const sorted = Object.entries(siteDayCounts).sort((a, b) => b[1] - a[1]);
   const max = sorted.length ? sorted[0][1] : 1;
   const colors = ["#2dd4bf","#4ade80","#fbbf24","#60a5fa","#f87171","#a78bfa","#fb923c"];
-
   const chevron = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
 
-  document.getElementById("siteHours").innerHTML = sorted.map(([code, hrs], i) => {
+  document.getElementById("siteHours").innerHTML = sorted.map(([code, days], i) => {
     const name = siteNameMap[code] || code;
     const shortName = name.replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
     const color = colors[i % colors.length];
     const uid = "site-" + code.replace(/[^a-z0-9]/gi,"");
 
-    const machineRows = Object.entries(siteMachineHours[code] || {})
-      .sort((a, b) => b[1].hrs - a[1].hrs)
+    const machineRows = Object.entries(siteMachineDays[code] || {})
+      .sort((a, b) => b[1].days.size - a[1].days.size)
       .map(([mid, d]) =>
         `<div style="display:flex;align-items:center;gap:8px;padding:3px 0 3px 10px;border-left:2px solid ${color}33">` +
         `<span style="font-size:10px;color:var(--muted);font-family:var(--mono);flex:1;min-width:0">${mid} · ${d.desc}</span>` +
-        `<span style="font-size:10px;font-weight:500;color:var(--muted);font-family:var(--mono);flex-shrink:0">${d.hrs.toFixed(1)}h</span>` +
+        `<span style="font-size:10px;font-weight:500;color:var(--muted);font-family:var(--mono);flex-shrink:0">${d.days.size}d</span>` +
         `</div>`
       ).join("");
 
@@ -1460,10 +1471,10 @@ function renderSiteHours() {
         `<span class="site-name" title="${name}">${shortName}</span>` +
         `<div style="display:flex;align-items:center;gap:4px">` +
           `<button class="site-collapse-btn collapsed" onclick="toggleSiteBreakdown('${uid}', this)" title="Toggle breakdown">${chevron}</button>` +
-          `<span class="site-hrs">${hrs.toFixed(1)}h</span>` +
+          `<span class="site-hrs">${days}d</span>` +
         `</div>` +
       `</div>` +
-      `<div class="progress-track"><div class="progress-fill" style="width:${(hrs/max*100).toFixed(1)}%;background:${color}"></div></div>` +
+      `<div class="progress-track"><div class="progress-fill" style="width:${(days/max*100).toFixed(1)}%;background:${color}"></div></div>` +
       `<div id="${uid}" style="margin-top:6px;display:none;flex-direction:column;gap:2px">${machineRows}</div>` +
     `</div>`;
   }).join("") || "<div style=\"color:var(--muted);font-size:12px;padding:8px 0\">No data for this period</div>";
