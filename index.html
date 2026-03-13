@@ -1103,24 +1103,65 @@ function renderKPIs() {
   const sessionCount = sessions.length;
   const flaggedCount = allFlagged.length;
 
-  // ── Uptime / Downtime ──
+  // ── Uptime / Downtime — machine specific only ──
   const [from, to] = getDateRange();
   const machineFilter = document.getElementById("machineFilter").value;
   const siteFilter    = document.getElementById("siteFilter").value;
 
-  // Uptime: distinct days with at least one session (already filtered by applyFilters)
-  const uptimeDays = new Set(sessions.map(s => s.date)).size;
+  let uptimeDowntimeCard = '';
 
-  // Downtime: distinct working_date days flagged for matching machine/site in period
-  const downtimeDays = new Set(
-    allFlagged.filter(f => {
-      if (!f.workingDate) return false;
-      if (f.workingDate < from || f.workingDate > to) return false;
-      if (machineFilter && f.machineId !== machineFilter) return false;
-      if (siteFilter && f.siteCode !== siteFilter) return false;
-      return true;
-    }).map(f => f.workingDate)
-  ).size;
+  if (!machineFilter) {
+    // No machine selected — show prompt
+    uptimeDowntimeCard = `
+      <div class="kpi-card highlight-amber">
+        <div class="kpi-card-top">
+          <div class="kpi-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+        </div>
+        <div class="kpi-card-body">
+          <div class="kpi-value" style="font-size:16px;color:var(--muted);font-weight:400">—</div>
+          <div class="kpi-label">Uptime / Downtime</div>
+          <div class="kpi-sub">Select a machine to view</div>
+        </div>
+      </div>
+    `;
+  } else {
+    // Machine selected — calculate uptime and downtime for that machine
+    const uptimeDays = new Set(sessions.map(s => s.date)).size;
+
+    const downtimeDays = new Set(
+      allFlagged.filter(f => {
+        if (!f.workingDate) return false;
+        if (f.workingDate < from || f.workingDate > to) return false;
+        if (f.machineId !== machineFilter) return false;
+        return true;
+      }).map(f => f.workingDate)
+    ).size;
+
+    // Get machine description for subtitle
+    const machineDesc = allMachines.find(m => m.machineId === machineFilter)?.machineDesc || machineFilter;
+    const shortDesc = machineDesc.length > 22 ? machineDesc.substring(0, 22) + '…' : machineDesc;
+
+    uptimeDowntimeCard = `
+      <div class="kpi-card highlight-amber">
+        <div class="kpi-card-top">
+          <div class="kpi-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+        </div>
+        <div class="kpi-card-body">
+          <div class="kpi-value" style="display:flex;align-items:baseline;gap:10px">
+            <span style="color:var(--green)">${uptimeDays}<span style="font-size:13px;font-weight:500;color:var(--muted)"> up</span></span>
+            <span style="font-size:18px;color:var(--border)">/</span>
+            <span style="color:#ef4444">${downtimeDays}<span style="font-size:13px;font-weight:500;color:var(--muted)"> down</span></span>
+          </div>
+          <div class="kpi-label">Uptime / Downtime</div>
+          <div class="kpi-sub">${shortDesc}</div>
+        </div>
+      </div>
+    `;
+  }
 
   const kpis = [
     {
@@ -1156,25 +1197,6 @@ function renderKPIs() {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
     }
   ];
-
-  const uptimeDowntimeCard = `
-    <div class="kpi-card highlight-amber">
-      <div class="kpi-card-top">
-        <div class="kpi-icon-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-      </div>
-      <div class="kpi-card-body">
-        <div class="kpi-value" style="display:flex;align-items:baseline;gap:10px">
-          <span style="color:var(--green)">${uptimeDays}<span style="font-size:13px;font-weight:500;color:var(--muted)"> up</span></span>
-          <span style="font-size:18px;color:var(--border)">/</span>
-          <span style="color:#ef4444">${downtimeDays}<span style="font-size:13px;font-weight:500;color:var(--muted)"> down</span></span>
-        </div>
-        <div class="kpi-label">Uptime / Downtime</div>
-        <div class="kpi-sub">days in selected period</div>
-      </div>
-    </div>
-  `;
 
   document.getElementById("kpiGrid").innerHTML =
     kpis.map(k => `
