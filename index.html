@@ -970,9 +970,9 @@ async function loadData(silent = false) {
 // Filters
 // ══════════════════════════════════════════════════════════
 function populateFilters() {
-  // Build site map: code → name
+  // Build site map from allMachines (master list)
   const siteMap = {};
-  allSessions.forEach(s => { siteMap[s.siteCode] = s.siteName; });
+  allMachines.forEach(m => { siteMap[m.siteCode] = m.siteName; });
 
   const siteEl = document.getElementById("siteFilter");
   siteEl.innerHTML = '<option value="">All Sites</option>';
@@ -990,30 +990,26 @@ function populateFilters() {
 }
 
 function updateMachineDropdown() {
-  const siteFilter = document.getElementById("siteFilter").value;
+  const siteFilter  = document.getElementById("siteFilter").value;
   const prevMachine = document.getElementById("machineFilter").value;
 
-  // Filter machines to selected site, or all if no site selected
-  const filteredSessions2 = allSessions.filter(s => !siteFilter || s.siteCode === siteFilter);
-  const machineMap = {};
-  filteredSessions2.forEach(s => { if (!machineMap[s.machineId]) machineMap[s.machineId] = s.machineDesc || ''; });
-  const machines = Object.keys(machineMap).sort();
+  // Build from allMachines (master list) not sessions
+  const filtered = allMachines.filter(m => !siteFilter || m.siteCode === siteFilter);
+  const sorted   = [...filtered].sort((a, b) => a.machineId.localeCompare(b.machineId));
 
   const mEl = document.getElementById("machineFilter");
   mEl.innerHTML = '<option value="">All Machines</option>';
-  machines.forEach(m => {
+  sorted.forEach(m => {
     const o = document.createElement("option");
-    o.value = m;
-    const desc = machineMap[m];
-    o.textContent = desc ? `${m} — ${desc}` : m;
+    o.value = m.machineId;
+    o.textContent = m.machineDesc ? `${m.machineId} — ${m.machineDesc}` : m.machineId;
     mEl.appendChild(o);
   });
 
-  // Re-select previous machine only if it still exists in the new site's machine list
-  // If site was reset to All Sites or machine no longer valid → reset to All Machines
+  // Reset if site changed or machine no longer valid
   if (!siteFilter) {
     mEl.value = "";
-  } else if (prevMachine && machines.includes(prevMachine)) {
+  } else if (prevMachine && sorted.find(m => m.machineId === prevMachine)) {
     mEl.value = prevMachine;
   } else {
     mEl.value = "";
