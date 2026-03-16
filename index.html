@@ -648,7 +648,10 @@
   <!-- ── Header ── -->
   <header class="header">
     <div class="header-left">
-      <div class="logo-mark">SILA</div>
+      <img src="sila-logo.png"
+           onerror="this.style.display='none';document.getElementById('silaFallback').style.display='flex'"
+           style="height:36px;width:auto;object-fit:contain" alt="SILA">
+      <div class="logo-mark" id="silaFallback" style="display:none">SILA</div>
       <div>
         <div class="header-title">ANSR Machine Usage Dashboard</div>
         <div class="header-subtitle">Real-time usage tracking across all sites</div>
