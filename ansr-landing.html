@@ -3,1655 +3,364 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANSR Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>ANSR Machine Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  /* ── Reset & Base ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:        #f5f5f6;
-    --surface:   #ffffff;
-    --surface2:  #ebebed;
-    --border:    #d4d4d8;
-    --text:      #111113;
-    --muted:     #71717a;
-    --subtle:    #a1a1aa;
-    --accent:    #18181b;
-    --green:     #16a34a;
-    --red:       #dc2626;
-    --amber:     #d97706;
-    --blue:      #2563eb;
-    --teal:      #0d9488;
-    --font:      'Inter', sans-serif;
-    --mono:      'DM Mono', monospace;
-  }
-
-  [data-theme="dark"] {
-    --bg:        #0e0e0f;
-    --surface:   #161617;
-    --surface2:  #1e1e20;
-    --border:    #2a2a2d;
-    --text:      #f0f0f0;
-    --muted:     #6b6b72;
-    --subtle:    #3a3a3e;
-    --accent:    #e8e8e8;
-    --green:     #4ade80;
-    --red:       #f87171;
-    --amber:     #fbbf24;
-    --blue:      #60a5fa;
-    --teal:      #2dd4bf;
+    --bg:       #f5f5f6;
+    --surface:  #ffffff;
+    --border:   #d4d4d8;
+    --text:     #111113;
+    --muted:    #71717a;
+    --teal:     #0d9488;
+    --teal-light: rgba(13,148,136,0.08);
+    --teal-border: rgba(13,148,136,0.25);
+    --red:      #dc2626;
+    --red-light: rgba(220,38,38,0.07);
+    --red-border: rgba(220,38,38,0.25);
+    --amber:    #d97706;
+    --amber-light: rgba(217,119,6,0.07);
+    --amber-border: rgba(217,119,6,0.25);
+    --font: 'Inter', sans-serif;
   }
 
   html, body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 14px;
-    line-height: 1.5;
     min-height: 100vh;
-  }
-
-  /* ── Layout ── */
-  .shell {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 28px 48px;
-  }
-
-  /* ── Header ── */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 0 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 28px;
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .logo-mark {
-    width: 36px;
-    height: 36px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    background: var(--bg);
+    font-family: var(--font);
+    color: var(--text);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    padding: 24px 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    margin: 0 auto;
+  }
+
+  @media (max-width: 480px) {
+    .card { border-radius: 12px; max-width: 100%; }
+    html, body { padding: 16px 12px; align-items: flex-start; padding-top: 40px; }
+    .card-header { padding: 20px 20px 16px; }
+    .actions { padding: 0 16px 20px; }
+    .machine-info { margin: 16px 16px 0; }
+    .section-label { padding: 16px 16px 8px; }
+    .card-footer { padding: 12px 16px; }
+  }
+
+  /* Header */
+  .card-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 38px;
+    height: 38px;
+    background: #f0fdfa;
+    border: 1px solid var(--teal-border);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
     font-size: 13px;
     color: var(--teal);
     letter-spacing: -0.5px;
+    flex-shrink: 0;
   }
 
-  .header-title {
+  .header-text h1 {
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text);
     letter-spacing: -0.2px;
   }
 
-  .header-subtitle {
+  .header-text p {
     font-size: 12px;
     color: var(--muted);
-    margin-top: 1px;
+    margin-top: 2px;
   }
 
-  .header-right {
+  /* Machine info pill */
+  .machine-info {
+    margin: 20px 24px 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
 
-  .live-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(74, 222, 128, 0.08);
-    border: 1px solid rgba(74, 222, 128, 0.2);
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-size: 12px;
-    color: var(--green);
-    font-weight: 500;
-  }
-
-  .live-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .last-updated {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
-
-  .btn-refresh {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: var(--font);
-    transition: color 0.15s, border-color 0.15s;
-  }
-
-  .btn-refresh:hover { color: var(--text); border-color: var(--subtle); }
-
-  .btn-theme {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
+  .machine-icon {
     width: 32px;
     height: 32px;
-    border-radius: 6px;
-    cursor: pointer;
+    background: var(--teal-light);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.15s, border-color 0.15s;
+    color: var(--teal);
     flex-shrink: 0;
-    position: relative;
+  }
+
+  .machine-icon svg { width: 16px; height: 16px; }
+
+  .machine-details {
+    min-width: 0;
+  }
+
+  .machine-id {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'DM Mono', 'Courier New', monospace;
+    white-space: nowrap;
     overflow: hidden;
-  }
-  .btn-theme:hover { color: var(--text); border-color: var(--subtle); }
-  .btn-theme svg {
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    transition: opacity 0.25s, transform 0.35s;
-  }
-  .btn-theme .icon-sun  { opacity: 1;  transform: rotate(0deg) scale(1); }
-  .btn-theme .icon-moon { opacity: 0;  transform: rotate(-45deg) scale(0.7); }
-  [data-theme="dark"] .btn-theme .icon-sun  { opacity: 0;  transform: rotate(45deg) scale(0.7); }
-  [data-theme="dark"] .btn-theme .icon-moon { opacity: 1;  transform: rotate(0deg) scale(1); }
-
-  /* ── Filters ── */
-  .filters {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 28px;
-    flex-wrap: wrap;
+    text-overflow: ellipsis;
   }
 
-  .filter-label {
-    font-size: 12px;
+  .machine-desc {
+    font-size: 11px;
     color: var(--muted);
-    margin-right: 4px;
-  }
-
-  .period-btns {
-    display: flex;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 7px;
+    margin-top: 1px;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .period-btn {
-    padding: 6px 14px;
-    font-size: 12px;
-    font-family: var(--font);
+  /* Section label */
+  .section-label {
+    font-size: 11px;
     font-weight: 500;
-    background: none;
-    border: none;
     color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-    border-right: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 20px 24px 10px;
   }
 
-  .period-btn:last-child { border-right: none; }
-  .period-btn:hover { color: var(--text); background: var(--surface2); }
-  .period-btn.active { color: var(--text); background: var(--surface2); }
-
-  .filter-sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
-
-  .filter-select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 12px;
-    padding: 6px 28px 6px 10px;
-    border-radius: 7px;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b72' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-  }
-
-  .date-range-inputs {
-    display: none;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .date-range-inputs.visible { display: flex; }
-
-  .date-input {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 12px;
-    padding: 6px 10px;
-    border-radius: 7px;
-    cursor: pointer;
-  }
-
-  .date-input::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
-
-  /* ── KPI Cards ── */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-
-  .kpi-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 18px 16px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.2s;
+  /* Action buttons */
+  .actions {
+    padding: 0 24px 24px;
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
 
-  .kpi-card:hover {
-    border-color: var(--subtle);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-  }
-
-  .kpi-card-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-
-  .kpi-icon-wrap {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
+  .action-btn {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .kpi-icon-wrap svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .kpi-card-body { display: flex; flex-direction: column; gap: 2px; }
-
-  .kpi-value {
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.5px;
-    line-height: 1.1;
-    font-family: 'Inter', sans-serif;
-  }
-
-  .kpi-value span {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--muted);
-    letter-spacing: 0;
-    margin-left: 2px;
-  }
-
-  .kpi-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-  }
-
-  .kpi-sub {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 400;
-  }
-
-  .kpi-card.highlight-green .kpi-icon-wrap { border-color: rgba(22,163,74,0.25); background: rgba(22,163,74,0.08); color: var(--green); }
-  .kpi-card.highlight-teal  .kpi-icon-wrap { border-color: rgba(13,148,136,0.25); background: rgba(13,148,136,0.08); color: var(--teal); }
-  .kpi-card.highlight-blue  .kpi-icon-wrap { border-color: rgba(37,99,235,0.25);  background: rgba(37,99,235,0.08);  color: var(--blue); }
-  .kpi-card.highlight-amber .kpi-icon-wrap { border-color: rgba(217,119,6,0.25);  background: rgba(217,119,6,0.08);  color: var(--amber); }
-  .kpi-card.highlight-red   .kpi-icon-wrap { border-color: rgba(220,38,38,0.25);  background: rgba(220,38,38,0.08);  color: var(--red); }
-
-  [data-theme="dark"] .kpi-card.highlight-green .kpi-icon-wrap { border-color: rgba(74,222,128,0.2);  background: rgba(74,222,128,0.07);  color: var(--green); }
-  [data-theme="dark"] .kpi-card.highlight-teal  .kpi-icon-wrap { border-color: rgba(45,212,191,0.2);  background: rgba(45,212,191,0.07);  color: var(--teal); }
-  [data-theme="dark"] .kpi-card.highlight-blue  .kpi-icon-wrap { border-color: rgba(96,165,250,0.2);  background: rgba(96,165,250,0.07);  color: var(--blue); }
-  [data-theme="dark"] .kpi-card.highlight-amber .kpi-icon-wrap { border-color: rgba(251,191,36,0.2);  background: rgba(251,191,36,0.07);  color: var(--amber); }
-  [data-theme="dark"] .kpi-card.highlight-red   .kpi-icon-wrap { border-color: rgba(248,113,113,0.2); background: rgba(248,113,113,0.07); color: var(--red); }
-
-  .kpi-trend {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    font-weight: 500;
-    margin-top: 2px;
-  }
-  .kpi-trend.up  { color: var(--green); }
-  .kpi-trend.down { color: var(--red); }
-  .kpi-trend.neu  { color: var(--muted); }
-
-  /* ── Charts Grid ── */
-  .charts-row {
-    display: grid;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .charts-row.two-thirds { grid-template-columns: 2fr 1fr; }
-  .charts-row.thirds     { grid-template-columns: 1fr 1fr 1fr; }
-  .charts-row.half       { grid-template-columns: 1fr 1fr; }
-  .charts-row.full       { grid-template-columns: 1fr; }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    transition: border-color 0.2s;
-  }
-
-  .card:hover { border-color: var(--subtle); }
-
-  .card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 18px;
-  }
-
-  .card-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.2px;
-  }
-
-  .card-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .card-badge {
-    font-size: 11px;
-    font-family: var(--mono);
-    color: var(--muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
-
-  /* ── Progress Bars (Site Utilisation) ── */
-  .site-list { display: flex; flex-direction: column; gap: 12px; }
-
-  .site-row { display: flex; flex-direction: column; gap: 5px; }
-
-  .site-row-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-right: 4px;
-  }
-
-  .site-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-    font-family: var(--mono);
-  }
-
-  .site-hrs {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    font-family: var(--mono);
-  }
-
-  .progress-track {
-    height: 4px;
-    background: var(--surface2);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.6s ease;
-  }
-
-
-  /* ── Machine Master Table ── */
-  .table-wrap {
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: 320px;
-  }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 0; }
-  thead th {
-    text-align: left;
-    padding: 8px 10px;
-    color: var(--muted);
-    font-weight: 500;
-    border-bottom: 1px solid var(--border);
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    position: sticky;
-    top: 0;
-    background: var(--surface);
-    z-index: 1;
-  }
-  tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 11px; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--surface2); }
-  .td-code { font-family: var(--mono); color: var(--teal); font-size: 11px; }
-  .td-site { color: var(--muted); font-size: 11px; }
-  .loading-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 0;
     gap: 14px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    background: var(--surface);
+    width: 100%;
+  }
+
+  .action-btn:active { transform: scale(0.98); }
+
+  .action-btn:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+
+  /* Log Usage — teal */
+  .btn-usage {
+    background: var(--teal-light);
+    border-color: var(--teal-border);
+  }
+
+  .btn-usage:hover { background: rgba(13,148,136,0.13); }
+
+  .btn-usage .btn-icon { background: var(--teal); }
+
+  .btn-usage .btn-title { color: var(--teal); }
+
+  /* Report Issue — red */
+  .btn-report {
+    background: var(--red-light);
+    border-color: var(--red-border);
+  }
+
+  .btn-report:hover { background: rgba(220,38,38,0.11); }
+
+  .btn-report .btn-icon { background: var(--red); }
+
+  .btn-report .btn-title { color: var(--red); }
+
+
+
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  .btn-icon svg { width: 18px; height: 18px; }
+
+  .btn-text { flex: 1; min-width: 0; }
+
+  .btn-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+  }
+
+  .btn-sub {
+    font-size: 11px;
     color: var(--muted);
-    font-size: 13px;
+    margin-top: 2px;
   }
 
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--border);
-    border-top-color: var(--teal);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+  .btn-arrow {
+    color: var(--muted);
+    flex-shrink: 0;
   }
 
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-arrow svg { width: 16px; height: 16px; }
 
-  .error-state {
-    background: rgba(248,113,113,0.05);
-    border: 1px solid rgba(248,113,113,0.2);
-    border-radius: 8px;
-    padding: 20px;
-    color: var(--red);
-    font-size: 13px;
-    margin: 20px 0;
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 24px 14px;
   }
 
-
-  .idle-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 10px;
-    background: var(--surface2);
-    border-radius: 6px;
+  /* Footer */
+  .card-footer {
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
   }
 
-  .idle-machine { font-size: 11px; font-family: var(--mono); color: var(--text); }
-  .idle-site    { font-size: 10px; color: var(--muted); margin-top: 1px; }
-  .idle-days    { font-size: 11px; color: var(--amber); flex-shrink: 0; }
-
-  .idle-list {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    max-height: 320px;
-    overflow-y: auto;
-    margin-top: 10px;
-    padding-right: 2px;
-  }
-
-  .all-active {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
-    color: var(--green);
-    font-size: 13px;
+  .card-footer span {
+    color: var(--teal);
     font-weight: 500;
   }
-
-  /* Side-by-side bottom row */
-  .bottom-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 12px;
-    align-items: start;
-  }
-  @media (max-width: 800px) {
-    .bottom-row { grid-template-columns: 1fr; }
-  }
-  .site-collapse-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--muted);
-    padding: 0 2px;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    transition: color 0.15s;
-  }
-  .site-collapse-btn:hover { color: var(--text); }
-  .site-collapse-btn svg {
-    width: 12px;
-    height: 12px;
-    transition: transform 0.2s;
-  }
-  .site-collapse-btn.collapsed svg { transform: rotate(-90deg); }
-
-  /* ── Scrollbar ── */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--subtle); }
-
-  /* Prevent any horizontal overflow at page level */
-  html, body { overflow-x: hidden; }
-  .shell { overflow-x: hidden; }
-
-  /* ── Responsive ── */
-  @media (max-width: 1100px) {
-    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-    .charts-row.two-thirds { grid-template-columns: 1fr; }
-    .charts-row.thirds { grid-template-columns: 1fr 1fr; }
-  }
-
-  @media (max-width: 700px) {
-    .kpi-grid { grid-template-columns: 1fr 1fr; }
-    .charts-row.two-thirds, .charts-row.thirds, .charts-row.half { grid-template-columns: 1fr; }
-    .shell { padding: 0 12px 32px; }
-    .header { flex-wrap: wrap; gap: 8px; padding: 12px 0; }
-    .header-meta { font-size: 11px; }
-    .filters { flex-wrap: wrap; gap: 8px; }
-    .filter-select { width: 100%; }
-    .period-btn { padding: 6px 10px; font-size: 11px; }
-    .card { padding: 14px; }
-    .kpi-value { font-size: 22px; }
-    canvas { max-height: 220px !important; }
-    .site-grid { grid-template-columns: 1fr !important; }
-    .idle-grid { grid-template-columns: 1fr 1fr !important; }
-    /* Hide less critical columns on small screens */
-    .col-make, .col-model { display: none; }
-    /* Machine ID wraps instead of overflowing */
-    .td-code { word-break: break-all; max-width: 100px; }
-  }
-
-  @media (max-width: 400px) {
-    .kpi-grid { grid-template-columns: 1fr; }
-    .header h1 { font-size: 15px; }
-  }
-
-  /* Skeleton loading animation */
-  .skeleton {
-    background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.4s infinite;
-    border-radius: 6px;
-  }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .skeleton-kpi { height: 120px; }
-  .skeleton-chart { height: 260px; }
 </style>
 </head>
 <body>
 
-<!-- ── Tooltip ── -->
-<div class="tooltip" id="tooltip"></div>
+<div class="card">
 
-<div class="shell">
-
-  <!-- ── Header ── -->
-  <header class="header">
-    <div class="header-left">
-      <img src="sila-logo.png"
-           onerror="this.style.display='none';document.getElementById('silaFallback').style.display='flex'"
-           style="height:36px;width:auto;object-fit:contain" alt="SILA">
-      <div class="logo-mark" id="silaFallback" style="display:none">SILA</div>
-      <div>
-        <div class="header-title">ANSR Machine Usage Dashboard</div>
-        <div class="header-subtitle">Real-time usage tracking across all sites</div>
-      </div>
-    </div>
-    <div class="header-right">
-      <span class="last-updated" id="lastUpdated">—</span>
-      <button class="btn-theme" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-          <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
-          <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-          <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
-        </svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      </button>
-      <div class="live-badge" style="background:var(--surface2);border-color:var(--border)"><div class="live-dot" style="background:var(--blue);animation:none"></div>Manual</div>
-      <button class="btn-refresh" onclick="loadData()">Refresh</button>
-    </div>
-  </header>
-
-  <!-- ── Filters ── -->
-  <div class="filters">
-    <span class="filter-label">Period:</span>
-    <div class="period-btns">
-      <button class="period-btn" data-period="today" onclick="setPeriod('today', this)">Today</button>
-      <button class="period-btn" data-period="week" onclick="setPeriod('week', this)">This Week</button>
-      <button class="period-btn active" data-period="month" onclick="setPeriod('month', this)">This Month</button>
-      <button class="period-btn" data-period="custom" onclick="setPeriod('custom', this)">Custom</button>
-    </div>
-    <div class="date-range-inputs" id="customRange">
-      <input class="date-input" type="date" id="dateFrom" onchange="applyCustomRange()">
-      <span style="color:var(--muted);font-size:12px;">→</span>
-      <input class="date-input" type="date" id="dateTo" onchange="applyCustomRange()">
-    </div>
-    <div class="filter-sep"></div>
-    <select class="filter-select" id="siteFilter" onchange="updateMachineDropdown(); renderAll()">
-      <option value="">All Sites</option>
-    </select>
-    <select class="filter-select" id="machineFilter" onchange="renderAll()">
-      <option value="">All Machines</option>
-    </select>
-  </div>
-
-  <!-- ── Loading Skeleton ── -->
-  <div id="loadingState">
-    <div class="kpi-grid" style="margin-bottom:24px">
-      <div class="card skeleton skeleton-kpi"></div>
-      <div class="card skeleton skeleton-kpi"></div>
-      <div class="card skeleton skeleton-kpi"></div>
-      <div class="card skeleton skeleton-kpi"></div>
-      <div class="card skeleton skeleton-kpi"></div>
-    </div>
-    <div class="charts-row two-thirds">
-      <div class="card skeleton skeleton-chart"></div>
-      <div class="card skeleton skeleton-chart"></div>
+  <!-- Header -->
+  <div class="card-header">
+    <img src="sila-logo.png"
+         onerror="this.style.display='none';document.getElementById('silaFallback').style.display='flex'"
+         style="height:40px;width:auto;object-fit:contain" alt="SILA">
+    <div class="logo-mark" id="silaFallback" style="display:none">SILA</div>
+    <div class="header-text">
+      <h1>ANSR Machine Portal</h1>
+      <p>Select an action for this machine</p>
     </div>
   </div>
 
-  <div id="errorState" class="error-state" style="display:none"></div>
 
-  <!-- ── Dashboard ── -->
-  <div id="dashboard" style="display:none">
 
-    <!-- KPI Cards -->
-    <div class="kpi-grid" id="kpiGrid"></div>
+  <div class="section-label">What would you like to do?</div>
 
-    <!-- Row 1: Usage by Machine (bar) + Machine Type (donut) -->
-    <div class="charts-row two-thirds">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Machine Utilisation</div>
-            <div class="card-sub">Top machines by % of available hours used</div>
-          </div>
-        </div>
-        <canvas id="chartMachine" height="200"></canvas>
+  <div class="actions">
+
+    <!-- Log Usage -->
+    <a class="action-btn btn-usage" id="btnUsage" href="https://docs.google.com/forms/d/e/1Fk1Mhwurd26D8KOq7SOTzYZDVEmK0C2IwWZJuEtN7WY/viewform" target="_blank">
+      <div class="btn-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <polyline points="12 7 12 12 15 15"/>
+        </svg>
       </div>
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Usage by Machine Type</div>
-            <div class="card-sub">Share of total hours</div>
-          </div>
-        </div>
-        <canvas id="chartType" height="200"></canvas>
+      <div class="btn-text">
+        <div class="btn-title">Log Usage</div>
+        <div class="btn-sub">Record a start or stop session</div>
       </div>
-    </div>
-
-    <!-- Row 2: Site Usage full width -->
-    <div style="margin-top:12px">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Site Usage</div>
-            <div class="card-sub">Distinct days of machine activity per site</div>
-          </div>
-        </div>
-        <div class="site-list" id="siteHours" style="max-height:320px;overflow-y:auto;padding-right:12px"></div>
+      <div class="btn-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
-    </div>
+    </a>
 
-    <!-- Row 3: Idle Machines + Machine Master side by side -->
-    <div class="bottom-row">
-
-      <!-- Idle Machines -->
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Idle Machines</div>
-            <div class="card-sub">Not used in selected period</div>
-          </div>
-          <span class="card-badge" id="idleBadge">0 Idle</span>
-        </div>
-        <div class="idle-list" id="idleList"></div>
+    <!-- Report Issue -->
+    <a class="action-btn btn-report" id="btnReport" href="#" target="_blank">
+      <div class="btn-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
       </div>
-
-      <!-- Machine Master -->
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Machine Master</div>
-            <div class="card-sub">All registered machines</div>
-          </div>
-          <input type="text" id="masterSearch" placeholder="Search…"
-            oninput="renderMachineMaster()"
-            style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
-                   padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:140px">
-        </div>
-        <div style="max-height:320px;overflow-y:auto;overflow-x:hidden;margin-top:10px">
-          <table id="machineMasterTable">
-            <thead>
-              <tr>
-                <th>Machine ID</th>
-                <th>Site</th>
-                <th>Description</th>
-                <th class="col-make">Make</th>
-                <th class="col-model">Model</th>
-              </tr>
-            </thead>
-            <tbody id="machineMasterBody"></tbody>
-          </table>
-        </div>
+      <div class="btn-text">
+        <div class="btn-title">Report Issue</div>
+        <div class="btn-sub">Machine not working or needs attention</div>
       </div>
-
-    </div><!-- /.bottom-row -->
-
-    <!-- Row 4: Flagged Machines -->
-    <div style="margin-top:12px">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Flagged Machines</div>
-            <div class="card-sub">Reported as not working — pending inspection</div>
-          </div>
-          <span class="card-badge" id="flaggedBadge" style="background:rgba(239,68,68,0.12);color:#ef4444">0 Issues</span>
-        </div>
-        <div style="max-height:320px;overflow-y:auto;overflow-x:hidden;margin-top:10px">
-          <table id="flaggedTable">
-            <thead>
-              <tr>
-                <th>Machine ID</th>
-                <th>Site</th>
-                <th>Description</th>
-                <th class="col-make">Make</th>
-                <th class="col-model">Model</th>
-                <th>Reported At</th>
-              </tr>
-            </thead>
-            <tbody id="flaggedTableBody"></tbody>
-          </table>
-        </div>
+      <div class="btn-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
-    </div>
+    </a>
 
-  </div><!-- /#dashboard -->
-</div><!-- /.shell -->
+
+
+  </div>
+
+  <div class="card-footer">
+    Powered by <span>SILA</span> · ANSR Facility Management
+  </div>
+
+</div>
 
 <script>
-// ══════════════════════════════════════════════════════════
-// CONFIG — Supabase
-// ══════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://ihpabujipwvbodbzimqp.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlocGFidWppcHd2Ym9kYnppbXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Njc1MzUsImV4cCI6MjA4ODM0MzUzNX0.11qVQSXcGTvZqW5dErGQCy-sOqy2WrybesGR5-ysCKE';
+  const params      = new URLSearchParams(window.location.search);
+  const machineId   = params.get('id')       || '';
+  const machineDesc = params.get('desc')     || '';
+  const siteCode    = params.get('site')     || '';
+  const siteName    = params.get('sitename') || '';
 
-async function supabaseFetch(table, params = '') {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json'
-    }
-  });
-  if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
-  return res.json();
-}
+  const BASE_FORM         = 'https://docs.google.com/forms/d/e/1FAIpQLSdjeOBYHVdjqTl9PaJ76pXPPpxHZtKn9n90a6vfKgvI0UboDQ/viewform';
+  const REPORT_ISSUE_FORM = '#'; // Replace with Shaktivel's form URL
 
-// ══════════════════════════════════════════════════════════
-// State
-// ══════════════════════════════════════════════════════════
-let allSessions = [];
-let allMachines = [];
-let allFlagged = [];
-let filteredSessions = [];
-let currentPeriod = "month";
-let customFrom = null;
-let customTo = null;
-let charts = {};
+  // Confirmed field entry IDs
+  const F_MACHINE_ID   = 'entry.1876283819';
+  const F_SITE_CODE    = 'entry.655641636';
+  const F_SITE_NAME    = 'entry.567212527';
+  const F_MACHINE_DESC = 'entry.1244799866';
 
-// ══════════════════════════════════════════════════════════
-// Theme
-// ══════════════════════════════════════════════════════════
-let currentTheme = 'light';
-
-function toggleTheme() {
-  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', currentTheme === 'dark' ? 'dark' : '');
-  try { localStorage.setItem('dashTheme', currentTheme); } catch(e) {}
-  if (allSessions.length > 0) renderAll();
-}
-
-(function() {
-  try {
-    const saved = localStorage.getItem('dashTheme');
-    if (saved === 'dark') {
-      currentTheme = 'dark';
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  } catch(e) {}
-})();
-
-let isFirstLoad = true;
-
-async function loadData(silent = false) {
-  if (!silent) {
-    document.getElementById("loadingState").style.display = "block";
-    document.getElementById("dashboard").style.display = "none";
-    document.getElementById("errorState").style.display = "none";
+  function buildFormUrl(base) {
+    const p = new URLSearchParams({ usp: 'pp_url' });
+    if (machineId)   p.set(F_MACHINE_ID,   machineId);
+    if (siteCode)    p.set(F_SITE_CODE,    siteCode);
+    if (siteName)    p.set(F_SITE_NAME,    siteName);
+    if (machineDesc) p.set(F_MACHINE_DESC, machineDesc);
+    return base + '?' + p.toString();
   }
 
-  try {
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-    const cutoff = ninetyDaysAgo.toISOString().split('T')[0];
-
-    const [rawSessions, rawMachines, rawFlagged] = await Promise.all([
-      supabaseFetch('sessions', `working_date=gte.${cutoff}&select=machine_id,site_code,site_name,machine_desc,staff_name,working_date,start_time,stop_time,duration_hrs,night_shift&order=working_date.desc&limit=5000`),
-      supabaseFetch('machines', `select=machine_id,site_code,site_name,machine_desc,make,model&order=site_code.asc`),
-      supabaseFetch('flagged_machines', `resolved=eq.false&select=machine_id,site_code,site_name,machine_desc,make,model,reported_at,working_date&order=reported_at.desc`)
-    ]);
-
-    allSessions = rawSessions
-      .filter(s => s.duration_hrs !== null)
-      .map(s => ({
-        machineId:   s.machine_id,
-        siteCode:    s.site_code,
-        siteName:    s.site_name,
-        machineDesc: s.machine_desc,
-        staffName:   s.staff_name,
-        date:        s.working_date,
-        startTime:   s.start_time,
-        stopTime:    s.stop_time,
-        duration:    parseFloat(s.duration_hrs) || 0,
-        nightShift:  s.night_shift
-      }));
-
-    allMachines = rawMachines.map(m => ({
-      machineId:   m.machine_id,
-      siteCode:    m.site_code,
-      siteName:    m.site_name,
-      machineDesc: m.machine_desc,
-      make:        m.make,
-      model:       m.model
-    }));
-
-    allFlagged = rawFlagged.map(f => ({
-      machineId:   f.machine_id,
-      siteCode:    f.site_code,
-      siteName:    f.site_name,
-      machineDesc: f.machine_desc,
-      make:        f.make,
-      model:       f.model,
-      reportedAt:  f.reported_at,
-      workingDate: f.working_date
-    }));
-
-    populateFilters();
-    renderAll();
-
-    document.getElementById("lastUpdated").textContent =
-      new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    document.getElementById("loadingState").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
-    document.getElementById("errorState").style.display = "none";
-
-    if (isFirstLoad) {
-      isFirstLoad = false;
-    }
-
-  } catch(err) {
-    document.getElementById("loadingState").style.display = "none";
-    if (!silent) {
-      document.getElementById("dashboard").style.display = "none";
-      const errEl = document.getElementById("errorState");
-      errEl.style.display = "block";
-      errEl.innerHTML = `⚠ Failed to load data: ${err.message}<br>
-        <small style="opacity:0.7">Check your internet connection</small><br><br>
-        <button onclick="loadData()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px">↻ Retry</button>`;
-    }
-  }
-}
-
-// ══════════════════════════════════════════════════════════
-// Filters
-// ══════════════════════════════════════════════════════════
-function populateFilters() {
-  // Build site map: code → name
-  const siteMap = {};
-  allSessions.forEach(s => { siteMap[s.siteCode] = s.siteName; });
-
-  const siteEl = document.getElementById("siteFilter");
-  siteEl.innerHTML = '<option value="">All Sites</option>';
-  Object.entries(siteMap)
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .forEach(([code, name]) => {
-      const o = document.createElement("option");
-      o.value = code;
-      const shortName = name.replace(/^ANSR\s*[–-]\s*/i, '').replace(/^ANSR\s+/i, '');
-      o.textContent = `${code} — ${shortName}`;
-      siteEl.appendChild(o);
-    });
-
-  updateMachineDropdown();
-}
-
-function updateMachineDropdown() {
-  const siteFilter = document.getElementById("siteFilter").value;
-  const prevMachine = document.getElementById("machineFilter").value;
-
-  // Filter machines to selected site, or all if no site selected
-  const filteredSessions2 = allSessions.filter(s => !siteFilter || s.siteCode === siteFilter);
-  const machineMap = {};
-  filteredSessions2.forEach(s => { if (!machineMap[s.machineId]) machineMap[s.machineId] = s.machineDesc || ''; });
-  const machines = Object.keys(machineMap).sort();
-
-  const mEl = document.getElementById("machineFilter");
-  mEl.innerHTML = '<option value="">All Machines</option>';
-  machines.forEach(m => {
-    const o = document.createElement("option");
-    o.value = m;
-    const desc = machineMap[m];
-    o.textContent = desc ? `${m} — ${desc}` : m;
-    mEl.appendChild(o);
-  });
-
-  // Re-select previous machine only if it still exists in the new site's machine list
-  // If site was reset to All Sites or machine no longer valid → reset to All Machines
-  if (!siteFilter) {
-    mEl.value = "";
-  } else if (prevMachine && machines.includes(prevMachine)) {
-    mEl.value = prevMachine;
-  } else {
-    mEl.value = "";
-  }
-}
-
-function setPeriod(period, btn) {
-  currentPeriod = period;
-  document.querySelectorAll(".period-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  const cr = document.getElementById("customRange");
-  cr.classList.toggle("visible", period === "custom");
-  if (period !== "custom") renderAll();
-}
-
-function applyCustomRange() {
-  customFrom = document.getElementById("dateFrom").value;
-  customTo = document.getElementById("dateTo").value;
-  if (customFrom && customTo) renderAll();
-}
-
-function localDateStr(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function getDateRange() {
-  const today = new Date();
-  const todayStr = localDateStr(today);
-
-  if (currentPeriod === "today") return [todayStr, todayStr];
-
-  if (currentPeriod === "week") {
-    const day = today.getDay();
-    const mon = new Date(today);
-    mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-    return [localDateStr(mon), todayStr];
-  }
-
-  if (currentPeriod === "month") {
-    const start = new Date(today.getFullYear(), today.getMonth(), 1);
-    return [localDateStr(start), todayStr];
-  }
-
-  if (currentPeriod === "custom" && customFrom && customTo) {
-    return [customFrom, customTo];
-  }
-
-  return [todayStr, todayStr];
-}
-
-function applyFilters() {
-  const [from, to] = getDateRange();
-  const siteFilter = document.getElementById("siteFilter").value;
-  const machineFilter = document.getElementById("machineFilter").value;
-
-  filteredSessions = allSessions.filter(s => {
-    const d = s.date;
-    if (d < from || d > to) return false;
-    if (siteFilter && s.siteCode !== siteFilter) return false;
-    if (machineFilter && s.machineId !== machineFilter) return false;
-    return true;
-  });
-}
-
-function renderAll() {
-  applyFilters();
-  renderKPIs();
-  renderChartMachine();
-  renderChartType();
-  renderSiteHours();
-  renderIdleMachines();
-  renderMachineMaster();
-  renderFlaggedMachines();
-}
-
-// ══════════════════════════════════════════════════════════
-// KPIs
-// ══════════════════════════════════════════════════════════
-function renderKPIs() {
-  const sessions = filteredSessions;
-  const totalHrs = sessions.reduce((a, s) => a + s.duration, 0);
-  const activeMachines = new Set(sessions.map(s => s.machineId)).size;
-  const sessionCount = sessions.length;
-  const flaggedCount = allFlagged.length;
-
-  // ── Uptime / Downtime — machine specific only ──
-  const [from, to] = getDateRange();
-  const machineFilter = document.getElementById("machineFilter").value;
-  const siteFilter    = document.getElementById("siteFilter").value;
-
-  let uptimeDowntimeCard = '';
-
-  if (!machineFilter) {
-    // No machine selected — show prompt
-    uptimeDowntimeCard = `
-      <div class="kpi-card highlight-amber">
-        <div class="kpi-card-top">
-          <div class="kpi-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </div>
-        </div>
-        <div class="kpi-card-body">
-          <div class="kpi-value" style="font-size:16px;color:var(--muted);font-weight:400">—</div>
-          <div class="kpi-label">Uptime / Downtime</div>
-          <div class="kpi-sub">Select a machine to view</div>
-        </div>
-      </div>
-    `;
-  } else {
-    // Machine selected — calculate uptime and downtime for that machine
-    const uptimeDays = new Set(sessions.map(s => s.date)).size;
-
-    const downtimeDays = new Set(
-      allFlagged.filter(f => {
-        if (!f.workingDate) return false;
-        if (f.workingDate < from || f.workingDate > to) return false;
-        if (f.machineId !== machineFilter) return false;
-        return true;
-      }).map(f => f.workingDate)
-    ).size;
-
-    // Get machine description for subtitle
-    const machineDesc = allMachines.find(m => m.machineId === machineFilter)?.machineDesc || machineFilter;
-    const shortDesc = machineDesc.length > 22 ? machineDesc.substring(0, 22) + '…' : machineDesc;
-
-    uptimeDowntimeCard = `
-      <div class="kpi-card highlight-amber">
-        <div class="kpi-card-top">
-          <div class="kpi-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </div>
-        </div>
-        <div class="kpi-card-body">
-          <div class="kpi-value" style="display:flex;align-items:baseline;gap:10px">
-            <span style="color:var(--green)">${uptimeDays}<span style="font-size:13px;font-weight:500;color:var(--muted)"> up</span></span>
-            <span style="font-size:18px;color:var(--border)">/</span>
-            <span style="color:#ef4444">${downtimeDays}<span style="font-size:13px;font-weight:500;color:var(--muted)"> down</span></span>
-          </div>
-          <div class="kpi-label">Uptime / Downtime</div>
-          <div class="kpi-sub">${shortDesc}</div>
-        </div>
-      </div>
-    `;
-  }
-
-  const kpis = [
-    {
-      label: "Total Usage",
-      value: new Set(sessions.map(s => s.date)).size,
-      unit: " days",
-      sub: `${sessionCount} completed sessions`,
-      cls: "highlight-teal",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>`
-    },
-    {
-      label: "Active Machines",
-      value: activeMachines,
-      unit: " units",
-      sub: `across ${new Set(sessions.map(s => s.siteCode)).size} sites`,
-      cls: "highlight-green",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`
-    },
-    {
-      label: "Sessions Logged",
-      value: sessionCount,
-      unit: " logs",
-      sub: `${sessions.filter(s => s.nightShift).length} night shifts`,
-      cls: "highlight-blue",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>`
-    },
-    {
-      label: "Flagged Machines",
-      value: flaggedCount,
-      unit: " issues",
-      sub: flaggedCount === 0 ? "All machines operational" : "reported not working",
-      cls: flaggedCount > 0 ? "highlight-red" : "highlight-green",
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
-    }
-  ];
-
-  document.getElementById("kpiGrid").innerHTML =
-    kpis.map(k => `
-      <div class="kpi-card ${k.cls}">
-        <div class="kpi-card-top">
-          <div class="kpi-icon-wrap">${k.icon}</div>
-        </div>
-        <div class="kpi-card-body">
-          <div class="kpi-value">${k.value}<span>${k.unit}</span></div>
-          <div class="kpi-label">${k.label}</div>
-          <div class="kpi-sub">${k.sub}</div>
-        </div>
-      </div>
-    `).join("") + uptimeDowntimeCard;
-}
-
-// ══════════════════════════════════════════════════════════
-// Chart helpers
-// ══════════════════════════════════════════════════════════
-const CHART_DEFAULTS = {
-  responsive: true,
-  maintainAspectRatio: true,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: cssVar("--surface2"),
-      borderColor: cssVar("--border"),
-      borderWidth: 1,
-      titleColor: cssVar("--text"),
-      bodyColor: cssVar("--muted"),
-      padding: 10,
-      cornerRadius: 6
-    }
-  }
-};
-
-function destroyChart(id) {
-  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
-}
-
-
-function cssVar(name) {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
-// ══════════════════════════════════════════════════════════
-// Chart: Usage by Machine (bar)
-// ══════════════════════════════════════════════════════════
-function renderChartMachine() {
-  destroyChart("machine");
-
-  // Build machine → hours from filtered sessions
-  const machineData = {};
-  filteredSessions.forEach(s => {
-    if (!machineData[s.machineId]) {
-      machineData[s.machineId] = { hrs: 0, siteCode: s.siteCode, siteName: s.siteName, desc: s.machineDesc };
-    }
-    machineData[s.machineId].hrs += s.duration;
-  });
-
-  // Calculate utilisation % per machine: hrs / (8h × days in period)
-  const [from, to] = getDateRange();
-  const fromDate = new Date(from);
-  const toDate = new Date(to);
-  let periodDays = 0;
-  const cur = new Date(fromDate);
-  while (cur <= toDate) {
-    const dow = cur.getDay();
-    if (dow >= 1 && dow <= 6) periodDays++; // Mon–Sat
-    cur.setDate(cur.getDate() + 1);
-  }
-  periodDays = Math.max(1, periodDays);
-  const maxHrs = 8 * periodDays;
-
-  // Build sorted entries by utilisation %
-  const entries = Object.entries(machineData).map(([id, d]) => ({
-    id,
-    hrs: d.hrs,
-    pct: Math.min(100, (d.hrs / maxHrs * 100)),
-    siteName: d.siteName,
-    desc: d.desc
-  })).sort((a, b) => b.pct - a.pct).slice(0, 8);
-
-  // Label: machine model · short site name
-  const labels = entries.map(e => {
-    const shortSite = e.siteName.replace(/^ANSR\s*[–-]\s*/i, '').replace(/^ANSR\s+/i, '');
-    // Extract model from machine ID (last segment after final dash group)
-    const parts = e.id.split('-');
-    const model = parts.slice(1, parts.length - 1).join('-') || e.id;
-    return `${model} · ${shortSite}`;
-  });
-
-  const vals = entries.map(e => +e.pct.toFixed(1));
-
-  // No data guard
-  if (entries.length === 0) {
-    destroyChart("machine");
-    const ctx = document.getElementById("chartMachine").getContext("2d");
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.fillStyle = "#6b6b72";
-    ctx.font = "13px DM Sans";
-    ctx.textAlign = "center";
-    ctx.fillText("No sessions in this period", ctx.canvas.width / 2, ctx.canvas.height / 2);
-    return;
-  }
-    from === to ? from : `${from} → ${to}`;
-
-  // Color bars by utilisation level
-  const barColors = vals.map(v =>
-    v >= 75 ? "rgba(74,222,128,0.7)"   // green — high use
-    : v >= 40 ? "rgba(45,212,191,0.7)" // teal — moderate
-    : "rgba(251,191,36,0.5)"           // amber — low use
-  );
-  const borderColors = vals.map(v =>
-    v >= 75 ? "#4ade80" : v >= 40 ? "#2dd4bf" : "#fbbf24"
-  );
-
-  const ctx = document.getElementById("chartMachine").getContext("2d");
-  const maxVal = Math.max(...vals);
-  const yMax = Math.ceil(maxVal * 1.15); // 15% headroom above highest bar
-
-  charts.machine = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        data: vals,
-        backgroundColor: barColors,
-        borderColor: borderColors,
-        borderWidth: 1,
-        borderRadius: 4,
-        borderSkipped: false
-      }]
-    },
-    options: {
-      ...CHART_DEFAULTS,
-      scales: {
-        x: {
-          ticks: { color: cssVar("--muted"), font: { family: "'DM Mono'", size: 10 }, maxRotation: 30, minRotation: 15 },
-          grid: { display: false },
-          border: { display: false },
-          title: { display: true, text: "Machine", color: cssVar("--muted"), font: { family: "'Inter'", size: 11 }, padding: { top: 6 } }
-        },
-        y: {
-          min: 0,
-          max: yMax,
-          ticks: {
-            color: cssVar("--muted"),
-            font: { family: "'DM Mono'", size: 10 },
-            callback: v => v + "%"
-          },
-          grid: { color: cssVar("--border") },
-          border: { display: false },
-          title: { display: true, text: "Utilisation %", color: cssVar("--muted"), font: { family: "'Inter'", size: 11 }, padding: { bottom: 6 } }
-        }
-      },
-      plugins: {
-        ...CHART_DEFAULTS.plugins,
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const e = entries[ctx.dataIndex];
-              return [
-                ` ${ctx.parsed.y.toFixed(1)}% utilised`,
-                ` ${e.hrs.toFixed(1)}h of ${maxHrs}h max`
-              ];
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
-// ══════════════════════════════════════════════════════════
-// Chart: Machine Type (donut)
-// ══════════════════════════════════════════════════════════
-function renderChartType() {
-  destroyChart("type");
-
-  const typeHours = {};
-  filteredSessions.forEach(s => {
-    const type = s.machineDesc.includes("Disc") ? "Disc Machine" :
-                 s.machineDesc.includes("Vacuum") || s.machineDesc.includes("vacuum") ? "Vacuum" :
-                 s.machineDesc.includes("Jet") ? "Jet Machine" :
-                 s.machineDesc.includes("Pressure") ? "Pressure Jet" : "Other";
-    typeHours[type] = (typeHours[type] || 0) + s.duration;
-  });
-
-  const labels = Object.keys(typeHours);
-  const vals = Object.values(typeHours).map(v => +v.toFixed(2));
-  const colors = ["#2dd4bf", "#60a5fa", "#fbbf24", "#f87171", "#a78bfa"];
-
-  const ctx = document.getElementById("chartType").getContext("2d");
-  charts.type = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels,
-      datasets: [{
-        data: vals,
-        backgroundColor: colors.slice(0, labels.length).map(c => c + "55"),
-        borderColor: colors.slice(0, labels.length),
-        borderWidth: 1.5
-      }]
-    },
-    options: {
-      ...CHART_DEFAULTS,
-      cutout: "70%",
-      plugins: {
-        ...CHART_DEFAULTS.plugins,
-        legend: {
-          display: true,
-          position: "bottom",
-          labels: {
-            color: cssVar("--muted"),
-            font: { family: "'Inter'", size: 11 },
-            padding: 12,
-            boxWidth: 10
-          }
-        }
-      }
-    }
-  });
-}
-
-// ══════════════════════════════════════════════════════════
-// Site Utilisation
-// ══════════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════════
-// Site Hours (absolute)
-// ══════════════════════════════════════════════════════════
-function renderSiteHours() {
-  const siteNameMap = {};
-  allSessions.forEach(s => { siteNameMap[s.siteCode] = s.siteName; });
-
-  // Site level: distinct days per site
-  const siteDays = {};
-  // Machine level: distinct days per machine per site
-  const siteMachineDays = {};
-
-  filteredSessions.forEach(s => {
-    // Site days
-    if (!siteDays[s.siteCode]) siteDays[s.siteCode] = new Set();
-    siteDays[s.siteCode].add(s.date);
-
-    // Machine days
-    if (!siteMachineDays[s.siteCode]) siteMachineDays[s.siteCode] = {};
-    if (!siteMachineDays[s.siteCode][s.machineId]) {
-      siteMachineDays[s.siteCode][s.machineId] = { days: new Set(), desc: s.machineDesc };
-    }
-    siteMachineDays[s.siteCode][s.machineId].days.add(s.date);
-  });
-
-  // Convert sets to counts
-  const siteDayCounts = Object.fromEntries(
-    Object.entries(siteDays).map(([code, set]) => [code, set.size])
-  );
-
-  const sorted = Object.entries(siteDayCounts).sort((a, b) => b[1] - a[1]);
-  const max = sorted.length ? sorted[0][1] : 1;
-  const colors = ["#2dd4bf","#4ade80","#fbbf24","#60a5fa","#f87171","#a78bfa","#fb923c"];
-  const chevron = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
-
-  document.getElementById("siteHours").innerHTML = sorted.map(([code, days], i) => {
-    const name = siteNameMap[code] || code;
-    const shortName = name.replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
-    const color = colors[i % colors.length];
-    const uid = "site-" + code.replace(/[^a-z0-9]/gi,"");
-
-    const machineRows = Object.entries(siteMachineDays[code] || {})
-      .sort((a, b) => b[1].days.size - a[1].days.size)
-      .map(([mid, d]) =>
-        `<div style="display:flex;align-items:center;gap:8px;padding:3px 0 3px 10px;border-left:2px solid ${color}33">` +
-        `<span style="font-size:10px;color:var(--muted);font-family:var(--mono);flex:1;min-width:0">${mid} · ${d.desc}</span>` +
-        `<span style="font-size:10px;font-weight:500;color:var(--muted);font-family:var(--mono);flex-shrink:0">${d.days.size}d</span>` +
-        `</div>`
-      ).join("");
-
-    return `<div class="site-row">` +
-      `<div class="site-row-top">` +
-        `<span class="site-name" title="${name}">${shortName}</span>` +
-        `<div style="display:flex;align-items:center;gap:4px">` +
-          `<button class="site-collapse-btn collapsed" onclick="toggleSiteBreakdown('${uid}', this)" title="Toggle breakdown">${chevron}</button>` +
-          `<span class="site-hrs">${days}d</span>` +
-        `</div>` +
-      `</div>` +
-      `<div class="progress-track"><div class="progress-fill" style="width:${(days/max*100).toFixed(1)}%;background:${color}"></div></div>` +
-      `<div id="${uid}" style="margin-top:6px;display:none;flex-direction:column;gap:2px">${machineRows}</div>` +
-    `</div>`;
-  }).join("") || "<div style=\"color:var(--muted);font-size:12px;padding:8px 0\">No data for this period</div>";
-}
-
-function toggleSiteBreakdown(uid, btn) {
-  const el = document.getElementById(uid);
-  if (!el) return;
-  const isHidden = el.style.display === "none";
-  el.style.display = isHidden ? "flex" : "none";
-  btn.classList.toggle("collapsed", !isHidden);
-}
-function renderSiteUtil() {
-  const siteMachineCount = {};
-  allMachines.forEach(m => {
-    siteMachineCount[m.siteCode] = (siteMachineCount[m.siteCode] || 0) + 1;
-  });
-
-  const siteNameMap = {};
-  allSessions.forEach(s => { siteNameMap[s.siteCode] = s.siteName; });
-
-  const siteHours = {};
-  filteredSessions.forEach(s => {
-    siteHours[s.siteCode] = (siteHours[s.siteCode] || 0) + s.duration;
-  });
-
-  const [from, to] = getDateRange();
-  const fromDate = new Date(from);
-  const toDate = new Date(to);
-  const dayType = document.getElementById("utilDayType")?.value || "working";
-
-  // Count days in period
-  let periodDays = 0;
-  const cur = new Date(fromDate);
-  while (cur <= toDate) {
-    const dow = cur.getDay();
-    if (dayType === "all" || (dow >= 1 && dow <= 6)) periodDays++;
-    cur.setDate(cur.getDate() + 1);
-  }
-  periodDays = Math.max(1, periodDays);
-
-  const sorted = Object.entries(siteHours).sort((a, b) => b[1] - a[1]);
-  const colors = ["#2dd4bf","#4ade80","#fbbf24","#60a5fa","#f87171","#a78bfa","#fb923c"];
-
-  document.getElementById("siteUtil").innerHTML = sorted.map(([code, hrs], i) => {
-    const machineCount = siteMachineCount[code] || 1;
-    const maxPossible = machineCount * 8 * periodDays;
-    const pct = Math.min(100, (hrs / maxPossible * 100)).toFixed(1);
-    const name = siteNameMap[code] || code;
-    const shortName = name.replace(/^ANSR\s*[–-]\s*/i,'').replace(/^ANSR\s+/i,'');
-
-    return `
-    <div class="site-row">
-      <div class="site-row-top">
-        <span class="site-name" title="${name}">${shortName}</span>
-        <span class="site-hrs">${pct}%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" style="width:${pct}%;background:${colors[i%colors.length]}"></div>
-      </div>
-      <div style="font-size:10px;color:var(--muted);margin-top:3px">
-        ${machineCount} machine${machineCount>1?'s':''} · ${hrs.toFixed(1)}h of ${maxPossible}h max
-      </div>
-    </div>`;
-  }).join("") || '<div style="color:var(--muted);font-size:12px;padding:8px 0">No data for this period</div>';
-}
-
-// ══════════════════════════════════════════════════════════
-// Idle Machines
-// ══════════════════════════════════════════════════════════
-function renderIdleMachines() {
-  const siteFilter = document.getElementById("siteFilter").value;
-
-  // Filter machine master to selected site first
-  const siteMachines = siteFilter
-    ? allMachines.filter(m => m.siteCode === siteFilter)
-    : allMachines;
-
-  const usedIds = new Set(filteredSessions.map(s => s.machineId));
-  const idle = siteMachines.filter(m => !usedIds.has(m.machineId));
-
-  document.getElementById("idleBadge").textContent = idle.length + " Idle";
-
-  if (idle.length === 0) {
-    document.getElementById("idleList").innerHTML =
-      "<div class=\"all-active\">" +
-        "<span style=\"color:var(--green);font-size:16px\">\u2713</span>" +
-        "All machines active in this period" +
-      "</div>";
-  } else {
-    document.getElementById("idleList").innerHTML = idle.map(m => {
-      const shortName = m.siteName.replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
-      return "<div class=\"idle-item\">" +
-        "<div>" +
-          "<div class=\"idle-machine\">" + m.machineId + "</div>" +
-          "<div style=\"font-size:10px;color:var(--muted);margin-top:2px\">" + shortName + " \u00b7 " + m.machineDesc + "</div>" +
-        "</div>" +
-        "<span class=\"idle-days\">Idle</span>" +
-      "</div>";
-    }).join("");
-  }
-}
-// ══════════════════════════════════════════════════════════
-// Machine Master
-// ══════════════════════════════════════════════════════════
-let masterOpen = true;
-
-function toggleMachineMaster() {} // no-op, kept for safety
-
-function renderMachineMaster() {
-  const q = (document.getElementById("masterSearch")?.value || "").toLowerCase();
-  const siteFilter = document.getElementById("siteFilter").value;
-
-  const filtered = allMachines.filter(m => {
-    // Respect site filter
-    if (siteFilter && m.siteCode !== siteFilter) return false;
-    // Respect search query
-    if (q) {
-      return m.machineId.toLowerCase().includes(q) ||
-             m.siteName.toLowerCase().includes(q) ||
-             m.machineDesc.toLowerCase().includes(q) ||
-             (m.make || "").toLowerCase().includes(q) ||
-             (m.model || "").toLowerCase().includes(q);
-    }
-    return true;
-  });
-
-  const sorted = [...filtered].sort((a, b) => a.siteCode.localeCompare(b.siteCode));
-
-  document.getElementById("machineMasterBody").innerHTML = sorted.map(m => {
-    const shortSite = m.siteName.replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"").replace(/^Ansr\s+/i,"");
-    return "<tr>" +
-      "<td class=\"td-code\">" + m.machineId + "</td>" +
-      "<td class=\"td-site\" title=\"" + m.siteName + "\">" + shortSite + "</td>" +
-      "<td>" + m.machineDesc + "</td>" +
-      "<td style=\"color:var(--muted);font-size:11px\" class=\"col-make\">" + (m.make || "—") + "</td>" +
-      "<td style=\"font-family:var(--mono);font-size:11px\" class=\"col-model\">" + (m.model || "—") + "</td>" +
-    "</tr>";
-  }).join("") || "<tr><td colspan=\"5\" style=\"text-align:center;padding:20px;color:var(--muted)\">No machines found</td></tr>";
-}
-
-// ══════════════════════════════════════════════════════════
-// Flagged Machines
-// ══════════════════════════════════════════════════════════
-function renderFlaggedMachines() {
-  const count = allFlagged.length;
-  const badge = document.getElementById("flaggedBadge");
-  if (badge) {
-    badge.textContent = count + " Issue" + (count !== 1 ? "s" : "");
-    badge.style.background = count > 0 ? "rgba(239,68,68,0.12)" : "rgba(34,197,94,0.12)";
-    badge.style.color = count > 0 ? "#ef4444" : "#22c55e";
-  }
-
-  document.getElementById("flaggedTableBody").innerHTML = allFlagged.length > 0
-    ? allFlagged.map(f => {
-        const shortSite = (f.siteName || "").replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
-        const reportedDate = f.reportedAt
-          ? new Date(f.reportedAt).toLocaleString("en-IN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" })
-          : "—";
-        return "<tr style=\"background:rgba(239,68,68,0.04)\">" +
-          "<td class=\"td-code\" style=\"color:#ef4444;font-weight:600\">" + f.machineId + "</td>" +
-          "<td class=\"td-site\" title=\"" + (f.siteName||"") + "\">" + shortSite + "</td>" +
-          "<td>" + (f.machineDesc || "—") + "</td>" +
-          "<td style=\"color:var(--muted);font-size:11px\" class=\"col-make\">" + (f.make || "—") + "</td>" +
-          "<td style=\"font-family:var(--mono);font-size:11px\" class=\"col-model\">" + (f.model || "—") + "</td>" +
-          "<td style=\"color:#ef4444;font-size:11px;white-space:nowrap\">" + reportedDate + "</td>" +
-        "</tr>";
-      }).join("")
-    : "<tr><td colspan=\"6\" style=\"text-align:center;padding:20px;color:var(--muted)\">No flagged machines — all operational ✓</td></tr>";
-}
-
-loadData();
+  document.getElementById('btnUsage').href  = buildFormUrl(BASE_FORM);
+  document.getElementById('btnReport').href = REPORT_ISSUE_FORM !== '#'
+    ? buildFormUrl(REPORT_ISSUE_FORM)
+    : '#';
 </script>
+
 </body>
 </html>
