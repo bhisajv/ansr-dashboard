@@ -46,6 +46,17 @@
     max-width: 420px;
     overflow: hidden;
     box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    margin: 0 auto;
+  }
+
+  @media (max-width: 480px) {
+    .card { border-radius: 12px; max-width: 100%; }
+    html, body { padding: 16px 12px; align-items: flex-start; padding-top: 40px; }
+    .card-header { padding: 20px 20px 16px; }
+    .actions { padding: 0 16px 20px; }
+    .machine-info { margin: 16px 16px 0; }
+    .section-label { padding: 16px 16px 8px; }
+    .card-footer { padding: 12px 16px; }
   }
 
   /* Header */
@@ -195,17 +206,7 @@
 
   .btn-report .btn-title { color: var(--red); }
 
-  /* Mark Resolved — amber */
-  .btn-resolve {
-    background: var(--amber-light);
-    border-color: var(--amber-border);
-  }
 
-  .btn-resolve:hover { background: rgba(217,119,6,0.11); }
-
-  .btn-resolve .btn-icon { background: var(--amber); }
-
-  .btn-resolve .btn-title { color: var(--amber); }
 
   .btn-icon {
     width: 36px;
@@ -269,26 +270,17 @@
 
   <!-- Header -->
   <div class="card-header">
-    <div class="logo-mark">SILA</div>
+    <img src="sila-logo.png"
+         onerror="this.style.display='none';document.getElementById('silaFallback').style.display='flex'"
+         style="height:40px;width:auto;object-fit:contain" alt="SILA">
+    <div class="logo-mark" id="silaFallback" style="display:none">SILA</div>
     <div class="header-text">
       <h1>ANSR Machine Portal</h1>
       <p>Select an action for this machine</p>
     </div>
   </div>
 
-  <!-- Machine Info -->
-  <div class="machine-info">
-    <div class="machine-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2"/>
-        <path d="M8 21h8M12 17v4"/>
-      </svg>
-    </div>
-    <div class="machine-details">
-      <div class="machine-id" id="machineIdDisplay">—</div>
-      <div class="machine-desc" id="machineDescDisplay">Scan a machine QR code to continue</div>
-    </div>
-  </div>
+
 
   <div class="section-label">What would you like to do?</div>
 
@@ -329,23 +321,7 @@
       </div>
     </a>
 
-    <div class="divider"></div>
 
-    <!-- Mark Resolved -->
-    <a class="action-btn btn-resolve" id="btnResolve" href="https://docs.google.com/forms/d/e/1Fk1Mhwurd26D8KOq7SOTzYZDVEmK0C2IwWZJuEtN7WY/viewform" target="_blank">
-      <div class="btn-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <div class="btn-text">
-        <div class="btn-title">Mark as Resolved</div>
-        <div class="btn-sub">Issue has been inspected and fixed</div>
-      </div>
-      <div class="btn-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-    </a>
 
   </div>
 
@@ -367,22 +343,24 @@
 
   if (machineId) {
     document.getElementById('machineIdDisplay').textContent  = machineId;
-    document.getElementById('machineDescDisplay').textContent = machineDesc || 'Machine details unavailable';
+    const descEl = document.getElementById('machineDescDisplay');
+    if (machineDesc) {
+      descEl.textContent = machineDesc;
+      descEl.style.display = 'block';
+    } else {
+      descEl.style.display = 'none';
+    }
 
     // Pre-fill machine ID into form URLs if supported
     const usageUrl   = LOG_USAGE_FORM   + (LOG_USAGE_FORM.includes('?') ? '&' : '?') + `usp=pp_url&entry.MACHINE_ID_FIELD=${encodeURIComponent(machineId)}`;
     const reportUrl  = REPORT_ISSUE_FORM !== '#'
       ? REPORT_ISSUE_FORM + `?usp=pp_url&entry.MACHINE_ID_FIELD=${encodeURIComponent(machineId)}`
       : '#';
-    const resolveUrl = LOG_USAGE_FORM   + (LOG_USAGE_FORM.includes('?') ? '&' : '?') + `usp=pp_url&entry.MACHINE_ID_FIELD=${encodeURIComponent(machineId)}`;
-
     document.getElementById('btnUsage').href   = usageUrl;
     document.getElementById('btnReport').href  = reportUrl;
-    document.getElementById('btnResolve').href = resolveUrl;
   } else {
     // No machine ID in URL — still show buttons with base form links
     document.getElementById('btnUsage').href   = LOG_USAGE_FORM;
-    document.getElementById('btnResolve').href = LOG_USAGE_FORM;
   }
 </script>
 
