@@ -258,10 +258,163 @@
     color: var(--muted);
   }
 
-  .card-footer span {
-    color: var(--teal);
-    font-weight: 500;
+  /* ── Issue alert banner ── */
+  .issue-banner {
+    margin: 16px 24px 0;
+    background: rgba(220,38,38,0.07);
+    border: 1.5px solid rgba(220,38,38,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
   }
+
+  .issue-banner-icon {
+    color: var(--red);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .issue-banner-icon svg { width: 16px; height: 16px; }
+
+  .issue-banner-text {
+    flex: 1;
+  }
+
+  .issue-banner-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--red);
+  }
+
+  .issue-banner-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── Resolve button ── */
+  .resolve-wrap {
+    padding: 0 24px 0;
+    display: none;
+  }
+
+  .btn-resolve {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border: 1.5px solid var(--amber-border);
+    background: var(--amber-light);
+    width: 100%;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    margin-bottom: 0;
+  }
+
+  .btn-resolve:active { transform: scale(0.98); }
+  .btn-resolve:hover  { box-shadow: 0 2px 12px rgba(0,0,0,0.08); background: rgba(217,119,6,0.11); }
+  .btn-resolve .btn-icon  { background: var(--amber); }
+  .btn-resolve .btn-title { color: var(--amber); }
+
+  /* ── Confirmation modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 100;
+  }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 340px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  }
+
+  .modal-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--amber-light);
+    border: 1.5px solid var(--amber-border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--amber);
+    margin-bottom: 14px;
+  }
+
+  .modal-icon svg { width: 22px; height: 22px; }
+
+  .modal h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .modal p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .modal p strong { color: var(--text); }
+
+  .modal-btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  .modal-btn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font);
+    transition: opacity 0.1s;
+  }
+
+  .modal-btn:active { opacity: 0.8; }
+
+  .modal-btn-cancel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .modal-btn-confirm {
+    background: var(--amber);
+    color: #fff;
+  }
+
+  /* ── Success state ── */
+  .success-banner {
+    margin: 16px 24px 0;
+    background: rgba(22,163,74,0.07);
+    border: 1.5px solid rgba(22,163,74,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .success-banner svg { width: 16px; height: 16px; color: #16a34a; flex-shrink: 0; }
+  .success-banner-text { font-size: 12px; font-weight: 600; color: #16a34a; }
 </style>
 </head>
 <body>
@@ -283,6 +436,23 @@
 
 
   <div class="section-label">What would you like to do?</div>
+
+  <!-- Issue alert banner — shown only if open flag exists -->
+  <div class="issue-banner" id="issueBanner">
+    <div class="issue-banner-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div class="issue-banner-text">
+      <div class="issue-banner-title">Open issue reported</div>
+      <div class="issue-banner-sub" id="issueBannerSub">This machine has been flagged as not working</div>
+    </div>
+  </div>
+
+  <!-- Success banner — shown after resolving -->
+  <div class="success-banner" id="successBanner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <div class="success-banner-text">Issue marked as resolved ✓</div>
+  </div>
 
   <div class="actions">
 
@@ -321,8 +491,22 @@
       </div>
     </a>
 
+  </div>
 
-
+  <!-- Resolve button — shown only if open flag exists -->
+  <div class="resolve-wrap" id="resolveWrap" style="padding: 10px 24px 0">
+    <button class="action-btn btn-resolve" onclick="showResolveModal()">
+      <div class="btn-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="btn-text">
+        <div class="btn-title">Mark as Resolved</div>
+        <div class="btn-sub">Issue has been inspected and fixed</div>
+      </div>
+      <div class="btn-arrow" style="color:var(--muted)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </button>
   </div>
 
   <div class="card-footer">
@@ -331,7 +515,25 @@
 
 </div>
 
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Confirm Resolution</h2>
+    <p>Are you sure the issue with <strong id="modalMachineId"></strong> has been fixed and the machine is fully operational?</p>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="hideModal()">Cancel</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmResolve()">Yes, Resolved</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  const SUPABASE_URL = 'https://ihpabujipwvbodbzimqp.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlocGFidWppcHd2Ym9kYnppbXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Njc1MzUsImV4cCI6MjA4ODM0MzUzNX0.11qVQSXcGTvZqW5dErGQCy-sOqy2WrybesGR5-ysCKE';
+
   const params      = new URLSearchParams(window.location.search);
   const machineId   = params.get('id')       || '';
   const machineDesc = params.get('desc')     || '';
@@ -341,7 +543,6 @@
   const BASE_FORM         = 'https://docs.google.com/forms/d/e/1FAIpQLSdjeOBYHVdjqTl9PaJ76pXPPpxHZtKn9n90a6vfKgvI0UboDQ/viewform';
   const REPORT_ISSUE_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLScQtv7vUOfEX6URbVhlazKK4YeiGFKAIFiuoTTGxQVV6VTsLA/viewform';
 
-  // Confirmed field entry IDs
   const F_MACHINE_ID   = 'entry.1876283819';
   const F_SITE_CODE    = 'entry.655641636';
   const F_SITE_NAME    = 'entry.567212527';
@@ -357,9 +558,95 @@
   }
 
   document.getElementById('btnUsage').href  = buildFormUrl(BASE_FORM);
-  document.getElementById('btnReport').href = REPORT_ISSUE_FORM !== '#'
-    ? buildFormUrl(REPORT_ISSUE_FORM)
-    : '#';
+  document.getElementById('btnReport').href = buildFormUrl(REPORT_ISSUE_FORM);
+
+  // Set modal machine ID text
+  if (machineId) document.getElementById('modalMachineId').textContent = machineId;
+
+  // ── Check for open flags on page load ──
+  let openFlagId = null;
+
+  async function checkOpenFlags() {
+    if (!machineId) return;
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/flagged_machines?machine_id=eq.${encodeURIComponent(machineId)}&resolved=eq.false&order=reported_at.desc&limit=1&select=id,reported_at`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      );
+      const data = await res.json();
+      if (data && data.length > 0) {
+        openFlagId = data[0].id;
+        const reportedDate = new Date(data[0].reported_at).toLocaleString('en-IN', {
+          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+        });
+        document.getElementById('issueBannerSub').textContent = `Flagged on ${reportedDate}`;
+        document.getElementById('issueBanner').style.display  = 'flex';
+        document.getElementById('resolveWrap').style.display  = 'block';
+      }
+    } catch(e) {
+      console.error('Flag check failed:', e);
+    }
+  }
+
+  // ── Modal logic ──
+  function showResolveModal() {
+    document.getElementById('modalOverlay').style.display = 'flex';
+  }
+
+  function hideModal() {
+    document.getElementById('modalOverlay').style.display = 'none';
+  }
+
+  // Close modal on overlay tap
+  document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) hideModal();
+  });
+
+  // ── Confirm resolve ──
+  async function confirmResolve() {
+    hideModal();
+    const confirmBtn = document.querySelector('.modal-btn-confirm');
+    confirmBtn.textContent = 'Resolving…';
+    confirmBtn.disabled = true;
+
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/flagged_machines?id=eq.${openFlagId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            resolved: true,
+            resolved_at: new Date().toISOString()
+          })
+        }
+      );
+
+      if (res.ok || res.status === 204) {
+        // Hide banner and resolve button, show success
+        document.getElementById('issueBanner').style.display  = 'none';
+        document.getElementById('resolveWrap').style.display  = 'none';
+        document.getElementById('successBanner').style.display = 'flex';
+        openFlagId = null;
+      } else {
+        alert('Something went wrong. Please try again.');
+        confirmBtn.textContent = 'Yes, Resolved';
+        confirmBtn.disabled = false;
+      }
+    } catch(e) {
+      alert('Network error. Please check your connection and try again.');
+      confirmBtn.textContent = 'Yes, Resolved';
+      confirmBtn.disabled = false;
+    }
+  }
+
+  // Run flag check on load
+  checkOpenFlags();
 </script>
 
 </body>
