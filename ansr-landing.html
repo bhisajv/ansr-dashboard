@@ -332,36 +332,34 @@
 </div>
 
 <script>
-  // Read machine info from URL params
-  // QR codes should point to: landing.html?id=SITE4677-CRV60-01&desc=CRV60+Double+Motor+Vacuum
-  const params = new URLSearchParams(window.location.search);
-  const machineId   = params.get('id')   || '';
-  const machineDesc = params.get('desc') || '';
+  const params      = new URLSearchParams(window.location.search);
+  const machineId   = params.get('id')       || '';
+  const machineDesc = params.get('desc')     || '';
+  const siteCode    = params.get('site')     || '';
+  const siteName    = params.get('sitename') || '';
 
-  const LOG_USAGE_FORM   = 'https://docs.google.com/forms/d/e/1Fk1Mhwurd26D8KOq7SOTzYZDVEmK0C2IwWZJuEtN7WY/viewform';
+  const BASE_FORM         = 'https://docs.google.com/forms/d/e/1FAIpQLSdjeOBYHVdjqTl9PaJ76pXPPpxHZtKn9n90a6vfKgvI0UboDQ/viewform';
   const REPORT_ISSUE_FORM = '#'; // Replace with Shaktivel's form URL
 
-  if (machineId) {
-    document.getElementById('machineIdDisplay').textContent  = machineId;
-    const descEl = document.getElementById('machineDescDisplay');
-    if (machineDesc) {
-      descEl.textContent = machineDesc;
-      descEl.style.display = 'block';
-    } else {
-      descEl.style.display = 'none';
-    }
+  // Confirmed field entry IDs
+  const F_MACHINE_ID   = 'entry.1876283819';
+  const F_SITE_CODE    = 'entry.655641636';
+  const F_SITE_NAME    = 'entry.567212527';
+  const F_MACHINE_DESC = 'entry.1244799866';
 
-    // Pre-fill machine ID into form URLs if supported
-    const usageUrl   = LOG_USAGE_FORM   + (LOG_USAGE_FORM.includes('?') ? '&' : '?') + `usp=pp_url&entry.MACHINE_ID_FIELD=${encodeURIComponent(machineId)}`;
-    const reportUrl  = REPORT_ISSUE_FORM !== '#'
-      ? REPORT_ISSUE_FORM + `?usp=pp_url&entry.MACHINE_ID_FIELD=${encodeURIComponent(machineId)}`
-      : '#';
-    document.getElementById('btnUsage').href   = usageUrl;
-    document.getElementById('btnReport').href  = reportUrl;
-  } else {
-    // No machine ID in URL — still show buttons with base form links
-    document.getElementById('btnUsage').href   = LOG_USAGE_FORM;
+  function buildFormUrl(base) {
+    const p = new URLSearchParams({ usp: 'pp_url' });
+    if (machineId)   p.set(F_MACHINE_ID,   machineId);
+    if (siteCode)    p.set(F_SITE_CODE,    siteCode);
+    if (siteName)    p.set(F_SITE_NAME,    siteName);
+    if (machineDesc) p.set(F_MACHINE_DESC, machineDesc);
+    return base + '?' + p.toString();
   }
+
+  document.getElementById('btnUsage').href  = buildFormUrl(BASE_FORM);
+  document.getElementById('btnReport').href = REPORT_ISSUE_FORM !== '#'
+    ? buildFormUrl(REPORT_ISSUE_FORM)
+    : '#';
 </script>
 
 </body>
