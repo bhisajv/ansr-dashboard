@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANSR DMR Dashboard — SILA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Backgrounds */
+  --bg:         #f5f6f8;
+  --surface:    #ffffff;
+  --surface2:   #f0f1f4;
+  --surface3:   #e8e9ed;
+  --border:     #e2e4e9;
+  --text:       #111827;
+  --muted:      #6b7280;
+  --subtle:     #9ca3af;
+
+  /* Brand */
+  --orange:        #E8720C;
+  --orange-dim:    rgba(232,114,12,0.08);
+  --orange-border: rgba(232,114,12,0.22);
+
+  /* Semantic — neutral/info */
+  --blue:          #2563A8;
+  --blue-dim:      rgba(37,99,168,0.08);
+  --blue-border:   rgba(37,99,168,0.22);
+
+  /* Semantic — positive */
+  --green:         #1A7A40;
+  --green-dim:     rgba(26,122,64,0.08);
+  --green-border:  rgba(26,122,64,0.22);
+
+  /* Semantic — warning */
+  --amber:         #B45309;
+  --amber-dim:     rgba(180,83,9,0.08);
+  --amber-border:  rgba(180,83,9,0.22);
+
+  /* Semantic — danger */
+  --red:           #B91C1C;
+  --red-dim:       rgba(185,28,28,0.08);
+  --red-border:    rgba(185,28,28,0.22);
+
+  /* Chart palette — categorical, distinct but muted */
+  --cat-pest:      #3B82C4;   /* steel blue  — Pest Control  */
+  --cat-ppm:       #7C5CBF;   /* muted violet — PPM Log      */
+  --cat-deep:      #0D9E6B;   /* teal green  — Deep Cleaning */
+  --cat-train:     #C27D1A;   /* warm brown  — Training      */
+  --cat-qr:        #C25986;   /* dusty rose  — QR Checklists */
+
+  --navy:       #1e2d40;
+  --font-head:  'Open Sans', sans-serif;
+  --font-body:  'Open Sans', sans-serif;
+  --font-mono:  'Roboto Mono', monospace;
+}
+
+[data-theme="dark"] {
+  --bg:         #0f1117;
+  --surface:    #1a1d27;
+  --surface2:   #222636;
+  --surface3:   #2a2f3f;
+  --border:     #2e3347;
+  --text:       #f1f3f9;
+  --muted:      #8891a8;
+  --subtle:     #3e4560;
+  --orange:     #F5821F;
+  --orange-dim: rgba(245,130,31,0.12);
+  --blue:       #4d8fe0;
+  --blue-dim:   rgba(77,143,224,0.1);
+  --green:      #34d370;
+  --green-dim:  rgba(52,211,112,0.09);
+  --red:        #f87171;
+  --red-dim:    rgba(248,113,113,0.09);
+  --amber:      #fbbf24;
+  --amber-dim:  rgba(251,191,36,0.09);
+  --cat-pest:   #38bdf8;
+  --cat-ppm:    #a78bfa;
+  --cat-deep:   #34d399;
+  --cat-train:  #fcd34d;
+  --cat-qr:     #f9a8d4;
+}
+
+html, body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.5; min-height: 100vh; overflow-x: hidden; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.shell { max-width: 1480px; margin: 0 auto; padding: 0 24px 56px; }
+
+/* Header */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
+  gap: 16px; flex-wrap: wrap;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.sila-logo { display: flex; align-items: center; }
+.sila-logo-box {
+  height: 34px; padding: 0 10px; background: var(--orange);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+}
+.sila-logo-box span { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+.divider-v { width: 1px; height: 28px; background: var(--border); }
+.header-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--text); }
+.header-sub { font-size: 11px; color: var(--muted); margin-top: 1px; font-family: var(--font-mono); }
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.live-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--green-dim); border: 1px solid rgba(45,125,70,0.25);
+  border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 600;
+  color: var(--green); font-family: var(--font-mono);
+}
+[data-theme="dark"] .live-chip { border-color: rgba(74,222,128,0.2); }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.btn-icon {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--muted); cursor: pointer; display: flex;
+  align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; position: relative;
+}
+.btn-icon:hover { color: var(--text); border-color: var(--subtle); }
+.btn-icon svg { width: 14px; height: 14px; position: absolute; transition: opacity 0.2s, transform 0.3s; }
+.btn-icon .i-sun  { opacity:1; transform: rotate(0deg) scale(1); }
+.btn-icon .i-moon { opacity:0; transform: rotate(-30deg) scale(0.7); }
+[data-theme="dark"] .btn-icon .i-sun  { opacity:0; transform: rotate(30deg) scale(0.7); }
+[data-theme="dark"] .btn-icon .i-moon { opacity:1; transform: rotate(0deg) scale(1); }
+.btn-refresh {
+  background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+  padding: 6px 14px; border-radius: 8px; font-size: 12px; font-family: var(--font-body);
+  cursor: pointer; transition: all 0.15s; font-weight: 500;
+}
+.btn-refresh:hover { color: var(--text); border-color: var(--orange); }
+.timestamp { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+
+/* Top bar */
+.top-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+.period-tabs {
+  display: flex; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; flex-shrink: 0;
+}
+.ptab {
+  padding: 7px 18px; font-size: 12px; font-weight: 600; font-family: var(--font-head);
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  transition: all 0.15s; border-right: 1px solid var(--border);
+}
+.ptab:last-child { border-right: none; }
+.ptab.active { color: var(--orange); background: var(--orange-dim); }
+.ptab:hover:not(.active) { color: var(--text); background: var(--surface2); }
+.site-select {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  font-family: var(--font-body); font-size: 12px; padding: 7px 28px 7px 12px;
+  border-radius: 10px; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7870' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; font-weight: 500;
+}
+.period-label {
+  font-size: 12px; color: var(--muted); font-family: var(--font-mono);
+  background: var(--surface2); border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px;
+}
+
+/* Date filter */
+.date-filter-wrap {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 5px 10px;
+}
+.date-filter-wrap label { font-size: 11px; color: var(--muted); font-family: var(--font-mono); white-space: nowrap; }
+.date-input {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  font-family: var(--font-mono); font-size: 11px; padding: 4px 8px; border-radius: 6px;
+  cursor: pointer; outline: none;
+}
+.date-input:focus { border-color: var(--orange); }
+.date-sep { font-size: 11px; color: var(--muted); }
+.btn-date-apply {
+  background: var(--orange); color: #fff; border: none; border-radius: 6px;
+  padding: 4px 12px; font-size: 11px; font-family: var(--font-body); font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.btn-date-apply:hover { opacity: 0.88; }
+.btn-date-clear {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 6px; padding: 4px 10px; font-size: 11px; font-family: var(--font-body);
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-date-clear:hover { border-color: var(--subtle); color: var(--text); }
+.date-filter-active { border-color: var(--orange) !important; background: var(--orange-dim) !important; }
+
+/* KPI Grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+.kpi-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;
+}
+.kpi-card:hover { border-color: var(--subtle); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+.kpi-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.kpi-icon {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--icon-border, var(--border));
+  background: var(--icon-bg, var(--surface2)); display: flex; align-items: center; justify-content: center;
+  color: var(--icon-color, var(--muted));
+}
+.kpi-icon svg { width: 16px; height: 16px; }
+.kpi-tag {
+  font-size: 10px; font-family: var(--font-mono); color: var(--muted);
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 2px 7px; border-radius: 4px; letter-spacing: 0.3px;
+}
+.kpi-val { font-family: var(--font-head); font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -1px; line-height: 1; }
+.kpi-val sup { font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 2px; vertical-align: super; }
+.kpi-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-top: 4px; }
+.kpi-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.kpi-orange { --icon-bg: var(--surface2); --icon-border: var(--border); --icon-color: var(--orange); }
+.kpi-blue   { --icon-bg: var(--surface2); --icon-border: var(--border); --icon-color: var(--blue); }
+.kpi-green  { --icon-bg: var(--surface2); --icon-border: var(--border); --icon-color: var(--green); }
+.kpi-red    { --icon-bg: var(--surface2); --icon-border: var(--border); --icon-color: var(--red); }
+.kpi-amber  { --icon-bg: var(--surface2); --icon-border: var(--border); --icon-color: var(--amber); }
+
+/* Layout */
+.row { display: grid; gap: 10px; margin-bottom: 10px; }
+.row-half { grid-template-columns: 1fr 1fr; }
+
+/* Card */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--subtle); }
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+.card-title { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--text); }
+.card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.card-badge {
+  font-size: 10px; font-family: var(--font-mono); color: var(--muted);
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 3px 8px; border-radius: 5px; flex-shrink: 0; white-space: nowrap;
+}
+
+/* Site Table */
+.site-table-wrap { overflow-x: auto; margin-top: 4px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th {
+  text-align: center; padding: 8px 12px; color: var(--muted); font-weight: 600;
+  border-bottom: 1px solid var(--border); font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.7px; background: var(--surface); position: sticky; top: 0; z-index: 1;
+  font-family: var(--font-head); white-space: nowrap;
+}
+thead th:first-child { text-align: left; }
+thead th:nth-child(2) { text-align: left; }
+tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 11px; white-space: nowrap; text-align: center; }
+tbody td:first-child { text-align: left; }
+tbody td:nth-child(2) { text-align: left; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+.td-site-code { font-family: var(--font-mono); color: var(--orange); font-size: 11px; font-weight: 500; }
+.td-site-name { color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+.td-num { font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+
+/* Progress bar */
+.mini-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; margin-top: 3px; }
+.mini-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+/* Animations */
+.fade-in { animation: fadeIn 0.35s ease both; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+.stagger-1 { animation-delay: 0.04s; }
+.stagger-2 { animation-delay: 0.08s; }
+.stagger-3 { animation-delay: 0.12s; }
+
+/* Chart stats summary */
+.chart-stats-row {
+  display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.chart-stat-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 10px;
+}
+.chart-stat-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.chart-stat-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); }
+.chart-stat-val { font-size: 12px; font-weight: 700; font-family: var(--font-mono); color: var(--text); margin-left: 2px; }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .row-half { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .shell { padding: 0 14px 40px; }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="sila-logo">
+        <div class="sila-logo-box"><span>SILA</span></div>
+      </div>
+      <div class="divider-v"></div>
+      <div>
+        <div class="header-title">ANSR Pan-India DMR Dashboard</div>
+        <div class="header-sub">11 sites · Facility Management Operations</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="timestamp" id="ts">—</span>
+      <div class="live-chip"><div class="live-dot"></div>DEMO</div>
+      <button class="btn-icon" onclick="toggleTheme()">
+        <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="btn-refresh" onclick="init()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <!-- Period Tabs + Filters -->
+  <div class="top-bar">
+    <div class="period-tabs">
+      <button class="ptab" onclick="setPeriod('daily',this)">Daily</button>
+      <button class="ptab active" onclick="setPeriod('weekly',this)">Weekly</button>
+      <button class="ptab" onclick="setPeriod('monthly',this)">Monthly</button>
+    </div>
+    <select class="site-select" id="siteFilter" onchange="render()">
+      <option value="">All Sites (11)</option>
+    </select>
+    <span class="period-label" id="periodLabel">Week: 09-Mar-2026 to 15-Mar-2026</span>
+
+    <!-- Custom Date Filter -->
+    <div class="date-filter-wrap" id="dateFilterWrap">
+      <label>Date:</label>
+      <input type="date" class="date-input" id="dateFrom" onchange="onDateChange()">
+      <span class="date-sep">→</span>
+      <input type="date" class="date-input" id="dateTo" onchange="onDateChange()">
+      <button class="btn-date-apply" onclick="applyDateFilter()">Apply</button>
+      <button class="btn-date-clear" onclick="clearDateFilter()">Clear</button>
+    </div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- Row 1: Site Table + Activity Completion Double Bar -->
+  <div class="row row-half">
+
+    <div class="card fade-in stagger-1">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Site Overview</div>
+          <div class="card-sub">Attendance, incidents & activity tracker across all ANSR sites</div>
+        </div>
+        <span class="card-badge" id="siteCountBadge">11 Sites</span>
+      </div>
+      <div class="site-table-wrap" style="max-height:340px; overflow-y:auto">
+        <table id="siteTable">
+          <thead>
+            <tr>
+              <th style="text-align:left">Site Code</th>
+              <th style="text-align:left">Site Name</th>
+              <th>Attendance %</th>
+              <th>Incidents</th>
+              <th>Open</th>
+              <th>Snags</th>
+              <th>PC Done</th>
+              <th>Training</th>
+            </tr>
+          </thead>
+          <tbody id="siteTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card fade-in stagger-2">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Activity Completion</div>
+          <div class="card-sub">Planned vs Completed across all categories</div>
+        </div>
+      </div>
+      <canvas id="activityBarChart" height="220"></canvas>
+    </div>
+
+  </div>
+
+  <!-- Row 2: Training Summary -->
+  <div class="row">
+    <div class="card fade-in stagger-1">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Training Summary</div>
+          <div class="card-sub">Sessions conducted per site this period</div>
+        </div>
+        <span class="card-badge" id="trainTotal">—</span>
+      </div>
+      <canvas id="trainingChart" height="60"></canvas>
+    </div>
+  </div>
+
+</div><!-- /.shell -->
+
+<script>
+const SITES = [
+  { code: "SITE2493", name: "ANSR – AVIS BUDGET GROUP" },
+  { code: "SITE4609", name: "ANSR 3RD FLOOR BLOCK BANYAN L1" },
+  { code: "SITE4677", name: "ANSR ALBERTSONS BANGALORE" },
+  { code: "SITE4693", name: "ANSR BBY M3 F9 BLR" },
+  { code: "SITE2251", name: "ANSR DELTA" },
+  { code: "SITE4788", name: "ANSR FM GLOBAL BANGALORE" },
+  { code: "SITE2255", name: "ANSR G3 2 AND 3 FLOOR" },
+  { code: "SITE3335", name: "ANSR J BLOCK" },
+  { code: "SITE3180", name: "ANSR KENVUE D3" },
+  { code: "SITE4199", name: "ANSR M3 11TH AND 12 FLOOR" },
+  { code: "SITE4023", name: "ANSR M3 19TH FLOOR BLR" },
+];
+
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function genSiteData() {
+  return SITES.map(s => ({
+    ...s,
+    attendancePct: rand(82, 99),
+    incidents: rand(0, 6),
+    incidentsOpen: rand(0, 3),
+    snags: rand(2, 12),
+    snagsOpen: rand(0, 6),
+    pcPlanned: rand(5, 10), pcDone: rand(3, 10),
+    ppmPlanned: rand(5, 12), ppmDone: rand(4, 11),
+    deepPlanned: rand(3, 7), deepDone: rand(2, 7),
+    trainPlanned: rand(2, 5), trainDone: rand(1, 5),
+    qrPlanned: rand(25, 55), qrDone: rand(18, 52),
+    cabs: rand(10, 60),
+  }));
+}
+
+let currentPeriod = 'weekly';
+let siteData = [];
+let charts = {};
+let dateFilterActive = false;
+let dateFrom = null, dateTo = null;
+
+// Theme
+let theme = 'light';
+function toggleTheme() {
+  theme = theme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : '');
+  render();
+}
+
+function cssv(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+// Period
+function setPeriod(p, btn) {
+  currentPeriod = p;
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const labels = {
+    daily: `Date: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}`,
+    weekly: 'Week: 09-Mar-2026 to 15-Mar-2026',
+    monthly: 'Month: March 2026'
+  };
+  document.getElementById('periodLabel').textContent = labels[p];
+  if (!dateFilterActive) {
+    siteData = genSiteData();
+    render();
+  }
+}
+
+// Date filter
+function onDateChange() {
+  const f = document.getElementById('dateFrom').value;
+  const t = document.getElementById('dateTo').value;
+  if (f && !t) {
+    document.getElementById('dateTo').value = f;
+  }
+}
+
+function applyDateFilter() {
+  const f = document.getElementById('dateFrom').value;
+  const t = document.getElementById('dateTo').value;
+  if (!f) return;
+  dateFrom = new Date(f);
+  dateTo = t ? new Date(t) : new Date(f);
+  dateTo.setHours(23,59,59);
+  dateFilterActive = true;
+  const wrap = document.getElementById('dateFilterWrap');
+  wrap.classList.add('date-filter-active');
+  const fStr = dateFrom.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const tStr = dateTo.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('periodLabel').textContent = fStr === tStr ? `Date: ${fStr}` : `Range: ${fStr} → ${tStr}`;
+  // Vary demo data based on range length to simulate filtering
+  const days = Math.max(1, Math.round((dateTo - dateFrom) / 86400000) + 1);
+  siteData = genSiteData().map(s => ({
+    ...s,
+    pcDone: Math.max(0, Math.round(s.pcDone * days / 7)),
+    ppmDone: Math.max(0, Math.round(s.ppmDone * days / 7)),
+    deepDone: Math.max(0, Math.round(s.deepDone * days / 7)),
+    trainDone: Math.max(0, Math.round(s.trainDone * days / 7)),
+    qrDone: Math.max(0, Math.round(s.qrDone * days / 7)),
+    incidents: Math.max(0, Math.round(s.incidents * days / 7)),
+  }));
+  render();
+}
+
+function clearDateFilter() {
+  dateFilterActive = false;
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  document.getElementById('dateFilterWrap').classList.remove('date-filter-active');
+  siteData = genSiteData();
+  const labels = { daily:`Date: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}`, weekly:'Week: 09-Mar-2026 to 15-Mar-2026', monthly:'Month: March 2026' };
+  document.getElementById('periodLabel').textContent = labels[currentPeriod];
+  render();
+}
+
+// Filters
+function populateSiteFilter() {
+  const sel = document.getElementById('siteFilter');
+  sel.innerHTML = `<option value="">All Sites (${SITES.length})</option>`;
+  SITES.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code;
+    o.textContent = `${s.code} — ${s.name.replace(/^ANSR\s+/i,'').substring(0,22)}`;
+    sel.appendChild(o);
+  });
+}
+
+function getFiltered() {
+  const f = document.getElementById('siteFilter').value;
+  return f ? siteData.filter(s => s.code === f) : siteData;
+}
+
+// Render
+function render() {
+  const data = getFiltered();
+  renderKPIs(data);
+  renderSiteTable(data);
+  renderActivityBar(data);
+  renderTraining(data);
+  document.getElementById('siteCountBadge').textContent = data.length + ' Site' + (data.length !== 1 ? 's' : '');
+  document.getElementById('ts').textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+// KPIs
+function renderKPIs(data) {
+  const totalIncidents = data.reduce((a,s)=>a+s.incidents,0);
+  const openIncidents  = data.reduce((a,s)=>a+s.incidentsOpen,0);
+  const avgAttendance  = Math.round(data.reduce((a,s)=>a+s.attendancePct,0)/data.length);
+  const totalTraining  = data.reduce((a,s)=>a+s.trainDone,0);
+  const totalSnags     = data.reduce((a,s)=>a+s.snagsOpen,0);
+  const totalCabs      = data.reduce((a,s)=>a+s.cabs,0);
+
+  const cards = [
+    { val:avgAttendance, sup:'%', name:'Avg Attendance', hint:`across ${data.length} sites`, cls:'kpi-blue', tag:'ATT',
+      icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+    { val:totalIncidents, sup:'', name:'Total Incidents', hint:`${openIncidents} open`, cls:'kpi-red', tag:'INC',
+      icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>` },
+    { val:totalSnags, sup:'', name:'Open Snags', hint:`${data.reduce((a,s)=>a+s.snags,0)} total raised`, cls:'kpi-amber', tag:'SNAG',
+      icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>` },
+    { val:totalTraining, sup:'', name:'Trainings Done', hint:`${data.reduce((a,s)=>a+s.trainPlanned,0)} planned`, cls:'kpi-green', tag:'TRN',
+      icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>` },
+    { val:totalCabs, sup:'', name:'Cabs Managed', hint:'transport movements', cls:'kpi-orange', tag:'CAB',
+      icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>` },
+  ];
+
+  document.getElementById('kpiGrid').innerHTML = cards.map((k,i) => `
+    <div class="kpi-card ${k.cls} fade-in stagger-${i+1}">
+      <div class="kpi-top">
+        <div class="kpi-icon">${k.icon}</div>
+        <span class="kpi-tag">${k.tag}</span>
+      </div>
+      <div>
+        <div class="kpi-val">${k.val}<sup>${k.sup}</sup></div>
+        <div class="kpi-name">${k.name}</div>
+        <div class="kpi-hint">${k.hint}</div>
+      </div>
+    </div>`).join('');
+}
+
+// Site Table — PC Done shows X/Y only if done <= planned, else shows done (no improper fractions)
+function renderSiteTable(data) {
+  document.getElementById('siteTableBody').innerHTML = data.map(s => {
+    const short = s.name.replace(/^ANSR\s+/i,'').replace(/\s+BANGALORE$/i,'').replace(/\s+BLR$/i,'');
+    const attColor = s.attendancePct >= 90 ? 'var(--green)' : s.attendancePct >= 80 ? 'var(--amber)' : 'var(--red)';
+    const pcDone = Math.min(s.pcDone, s.pcPlanned);
+    const pcDisplay = `${pcDone}/${s.pcPlanned}`;
+    const pcColor = pcDone >= s.pcPlanned ? 'var(--green)' : pcDone >= s.pcPlanned * 0.7 ? 'var(--amber)' : 'var(--red)';
+    const openColor = s.incidentsOpen > 0 ? 'var(--red)' : 'var(--green)';
+    return `<tr>
+      <td class="td-site-code">${s.code}</td>
+      <td class="td-site-name" title="${s.name}">${short}</td>
+      <td class="td-num" style="color:${attColor};font-weight:600">${s.attendancePct}%</td>
+      <td class="td-num">${s.incidents}</td>
+      <td class="td-num" style="color:${openColor};font-weight:600">${s.incidentsOpen}</td>
+      <td class="td-num">${s.snagsOpen}</td>
+      <td class="td-num" style="color:${pcColor}">${pcDisplay}</td>
+      <td class="td-num">${s.trainDone}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Activity Completion — double bar chart
+function renderActivityBar(data) {
+  destroyChart('actBar');
+
+  const cats = [
+    { name:'Pest Control',  color: cssv('--cat-pest'),
+      planned: data.reduce((a,s)=>a+s.pcPlanned,0),    done: data.reduce((a,s)=>a+Math.min(s.pcDone,s.pcPlanned),0) },
+    { name:'PPM Log',       color: cssv('--cat-ppm'),
+      planned: data.reduce((a,s)=>a+s.ppmPlanned,0),   done: data.reduce((a,s)=>a+Math.min(s.ppmDone,s.ppmPlanned),0) },
+    { name:'Deep Cleaning', color: cssv('--cat-deep'),
+      planned: data.reduce((a,s)=>a+s.deepPlanned,0),  done: data.reduce((a,s)=>a+Math.min(s.deepDone,s.deepPlanned),0) },
+    { name:'Training',      color: cssv('--cat-train'),
+      planned: data.reduce((a,s)=>a+s.trainPlanned,0), done: data.reduce((a,s)=>a+Math.min(s.trainDone,s.trainPlanned),0) },
+    { name:'QR Checklists', color: cssv('--cat-qr'),
+      planned: data.reduce((a,s)=>a+s.qrPlanned,0),    done: data.reduce((a,s)=>a+Math.min(s.qrDone,s.qrPlanned),0) },
+  ];
+
+  const ctx = document.getElementById('activityBarChart').getContext('2d');
+  charts.actBar = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: cats.map(c => c.name),
+      datasets: [
+        {
+          label: 'Planned',
+          data: cats.map(c => c.planned),
+          backgroundColor: cssv('--surface3'),
+          borderColor: cssv('--border'),
+          borderWidth: 1,
+          borderRadius: 5,
+          borderSkipped: false,
+        },
+        {
+          label: 'Completed',
+          data: cats.map(c => c.done),
+          backgroundColor: cats.map(c => c.color + 'dd'),
+          borderColor: cats.map(c => c.color),
+          borderWidth: 1,
+          borderRadius: 5,
+          borderSkipped: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      scales: {
+        x: {
+          title: { display: true, text: 'Activity Category', color: cssv('--muted'), font: { family:'Open Sans', size:10, weight:'600' }, padding: { top: 6 } },
+          ticks: { color: cssv('--muted'), font: { family:'Open Sans', size:10 } },
+          grid: { display: false },
+          border: { display: false }
+        },
+        y: {
+          title: { display: true, text: 'Count (activities)', color: cssv('--muted'), font: { family:'Open Sans', size:10, weight:'600' }, padding: { bottom: 6 } },
+          ticks: { color: cssv('--muted'), font: { family:'Roboto Mono', size:9 }, stepSize: 10 },
+          grid: { color: cssv('--border') },
+          border: { display: false },
+          beginAtZero: true
+        }
+      },
+      plugins: {
+        legend: {
+          display: true, position: 'bottom',
+          labels: { color: cssv('--muted'), font: { family:'Open Sans', size:10 }, padding: 14, boxWidth: 10, borderRadius: 3, useBorderRadius: true }
+        },
+        tooltip: {
+          backgroundColor: cssv('--surface2'), borderColor: cssv('--border'), borderWidth: 1,
+          titleColor: cssv('--text'), bodyColor: cssv('--muted'), padding: 10, cornerRadius: 8,
+          callbacks: {
+            afterBody: (items) => {
+              const i = items[0].dataIndex;
+              const c = cats[i];
+              const pct = c.planned > 0 ? Math.round(c.done/c.planned*100) : 0;
+              return [`Completion: ${pct}%`];
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// Training Chart
+function renderTraining(data) {
+  destroyChart('train');
+  const labels = data.map(s => s.code.replace('SITE',''));
+  const vals = data.map(s => s.trainDone);
+  const total = vals.reduce((a,v)=>a+v,0);
+  document.getElementById('trainTotal').textContent = total + ' sessions';
+
+  const ctx = document.getElementById('trainingChart').getContext('2d');
+  charts.train = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Sessions Conducted',
+        data: vals,
+        backgroundColor: cssv('--blue-dim'),
+        borderColor: cssv('--blue'),
+        borderWidth: 1.5, borderRadius: 4, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, indexAxis: 'y',
+      scales: {
+        x: {
+          title: { display: true, text: 'No. of Sessions', color: cssv('--muted'), font: { family:'Open Sans', size:10, weight:'600' } },
+          ticks: { color: cssv('--muted'), font: { family:'Roboto Mono', size:9 }, stepSize: 1 },
+          grid: { color: cssv('--border') },
+          border: { display: false },
+          beginAtZero: true
+        },
+        y: {
+          title: { display: true, text: 'Site Code', color: cssv('--muted'), font: { family:'Open Sans', size:10, weight:'600' } },
+          ticks: { color: cssv('--muted'), font: { family:'Roboto Mono', size:9 } },
+          grid: { display: false },
+          border: { display: false }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: cssv('--surface2'), borderColor: cssv('--border'), borderWidth:1,
+          titleColor: cssv('--text'), bodyColor: cssv('--muted'), padding: 10, cornerRadius: 8,
+          callbacks: {
+            title: (items) => data[items[0].dataIndex].name.replace(/^ANSR\s+/i,''),
+            label: (item) => ` ${item.parsed.x} sessions conducted`
+          }
+        }
+      }
+    }
+  });
+}
+
+function populateSiteFilter() {
+  const sel = document.getElementById('siteFilter');
+  sel.innerHTML = `<option value="">All Sites (${SITES.length})</option>`;
+  SITES.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code;
+    o.textContent = `${s.code} — ${s.name.replace(/^ANSR\s+/i,'').substring(0,22)}`;
+    sel.appendChild(o);
+  });
+}
+
+function init() {
+  siteData = genSiteData();
+  populateSiteFilter();
+  render();
+}
+
+init();
+</script>
+</body>
+</html>
