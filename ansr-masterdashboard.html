@@ -159,32 +159,7 @@ html, body { background: var(--bg); color: var(--text); font-family: var(--font-
   background: var(--surface2); border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px;
 }
 
-/* Date filter */
-.date-filter-wrap {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 5px 10px;
-}
-.date-filter-wrap label { font-size: 11px; color: var(--muted); font-family: var(--font-mono); white-space: nowrap; }
-.date-input {
-  background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-  font-family: var(--font-mono); font-size: 11px; padding: 4px 8px; border-radius: 6px;
-  cursor: pointer; outline: none;
-}
-.date-input:focus { border-color: var(--orange); }
-.date-sep { font-size: 11px; color: var(--muted); }
-.btn-date-apply {
-  background: var(--orange); color: #fff; border: none; border-radius: 6px;
-  padding: 4px 12px; font-size: 11px; font-family: var(--font-body); font-weight: 600;
-  cursor: pointer; transition: opacity 0.15s;
-}
-.btn-date-apply:hover { opacity: 0.88; }
-.btn-date-clear {
-  background: none; border: 1px solid var(--border); color: var(--muted);
-  border-radius: 6px; padding: 4px 10px; font-size: 11px; font-family: var(--font-body);
-  cursor: pointer; transition: all 0.15s;
-}
-.btn-date-clear:hover { border-color: var(--subtle); color: var(--text); }
-.date-filter-active { border-color: var(--orange) !important; background: var(--orange-dim) !important; }
+
 
 /* KPI Grid */
 .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
@@ -332,15 +307,6 @@ tbody tr:hover td { background: var(--surface2); }
     </select>
     <span class="period-label" id="periodLabel">Week: 09-Mar-2026 to 15-Mar-2026</span>
 
-    <!-- Custom Date Filter -->
-    <div class="date-filter-wrap" id="dateFilterWrap">
-      <label>Date:</label>
-      <input type="date" class="date-input" id="dateFrom" onchange="onDateChange()">
-      <span class="date-sep">→</span>
-      <input type="date" class="date-input" id="dateTo" onchange="onDateChange()">
-      <button class="btn-date-apply" onclick="applyDateFilter()">Apply</button>
-      <button class="btn-date-clear" onclick="clearDateFilter()">Clear</button>
-    </div>
   </div>
 
   <!-- KPI Grid -->
@@ -441,9 +407,6 @@ function genSiteData() {
 let currentPeriod = 'weekly';
 let siteData = [];
 let charts = {};
-let dateFilterActive = false;
-let dateFrom = null, dateTo = null;
-
 // Theme
 let theme = 'light';
 function toggleTheme() {
@@ -466,56 +429,7 @@ function setPeriod(p, btn) {
     monthly: 'Month: March 2026'
   };
   document.getElementById('periodLabel').textContent = labels[p];
-  if (!dateFilterActive) {
-    siteData = genSiteData();
-    render();
-  }
-}
-
-// Date filter
-function onDateChange() {
-  const f = document.getElementById('dateFrom').value;
-  const t = document.getElementById('dateTo').value;
-  if (f && !t) {
-    document.getElementById('dateTo').value = f;
-  }
-}
-
-function applyDateFilter() {
-  const f = document.getElementById('dateFrom').value;
-  const t = document.getElementById('dateTo').value;
-  if (!f) return;
-  dateFrom = new Date(f);
-  dateTo = t ? new Date(t) : new Date(f);
-  dateTo.setHours(23,59,59);
-  dateFilterActive = true;
-  const wrap = document.getElementById('dateFilterWrap');
-  wrap.classList.add('date-filter-active');
-  const fStr = dateFrom.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-  const tStr = dateTo.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-  document.getElementById('periodLabel').textContent = fStr === tStr ? `Date: ${fStr}` : `Range: ${fStr} → ${tStr}`;
-  // Vary demo data based on range length to simulate filtering
-  const days = Math.max(1, Math.round((dateTo - dateFrom) / 86400000) + 1);
-  siteData = genSiteData().map(s => ({
-    ...s,
-    pcDone: Math.max(0, Math.round(s.pcDone * days / 7)),
-    ppmDone: Math.max(0, Math.round(s.ppmDone * days / 7)),
-    deepDone: Math.max(0, Math.round(s.deepDone * days / 7)),
-    trainDone: Math.max(0, Math.round(s.trainDone * days / 7)),
-    qrDone: Math.max(0, Math.round(s.qrDone * days / 7)),
-    incidents: Math.max(0, Math.round(s.incidents * days / 7)),
-  }));
-  render();
-}
-
-function clearDateFilter() {
-  dateFilterActive = false;
-  document.getElementById('dateFrom').value = '';
-  document.getElementById('dateTo').value = '';
-  document.getElementById('dateFilterWrap').classList.remove('date-filter-active');
   siteData = genSiteData();
-  const labels = { daily:`Date: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}`, weekly:'Week: 09-Mar-2026 to 15-Mar-2026', monthly:'Month: March 2026' };
-  document.getElementById('periodLabel').textContent = labels[currentPeriod];
   render();
 }
 
