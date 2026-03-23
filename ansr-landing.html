@@ -24,6 +24,9 @@
     --amber:    #d97706;
     --amber-light: rgba(217,119,6,0.07);
     --amber-border: rgba(217,119,6,0.25);
+    --blue:     #2563eb;
+    --blue-light: rgba(37,99,235,0.07);
+    --blue-border: rgba(37,99,235,0.25);
     --font: 'Inter', sans-serif;
   }
 
@@ -59,7 +62,6 @@
     .card-footer { padding: 12px 16px; }
   }
 
-  /* Header */
   .card-header {
     padding: 24px 24px 20px;
     border-bottom: 1px solid var(--border);
@@ -69,350 +71,110 @@
   }
 
   .logo-mark {
-    width: 38px;
-    height: 38px;
-    background: #f0fdfa;
-    border: 1px solid var(--teal-border);
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--teal);
-    letter-spacing: -0.5px;
-    flex-shrink: 0;
+    width: 38px; height: 38px; background: #f0fdfa;
+    border: 1px solid var(--teal-border); border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: var(--teal);
+    letter-spacing: -0.5px; flex-shrink: 0;
   }
 
-  .header-text h1 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.2px;
-  }
+  .header-text h1 { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+  .header-text p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-  .header-text p {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  /* Machine info pill */
   .machine-info {
-    margin: 20px 24px 0;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    margin: 20px 24px 0; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px;
   }
-
-  .machine-icon {
-    width: 32px;
-    height: 32px;
-    background: var(--teal-light);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--teal);
-    flex-shrink: 0;
-  }
-
+  .machine-icon { width: 32px; height: 32px; background: var(--teal-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--teal); flex-shrink: 0; }
   .machine-icon svg { width: 16px; height: 16px; }
+  .machine-details { min-width: 0; }
+  .machine-id { font-size: 13px; font-weight: 600; color: var(--text); font-family: 'DM Mono', 'Courier New', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .machine-desc { font-size: 11px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  .machine-details {
-    min-width: 0;
-  }
+  .section-label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; padding: 20px 24px 10px; }
 
-  .machine-id {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    font-family: 'DM Mono', 'Courier New', monospace;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .machine-desc {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Section label */
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    padding: 20px 24px 10px;
-  }
-
-  /* Action buttons */
-  .actions {
-    padding: 0 24px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+  .actions { padding: 0 24px 24px; display: flex; flex-direction: column; gap: 10px; }
 
   .action-btn {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
-    border-radius: 12px;
-    border: 1.5px solid transparent;
-    text-decoration: none;
-    cursor: pointer;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-    background: var(--surface);
-    width: 100%;
+    display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+    border-radius: 12px; border: 1.5px solid transparent; text-decoration: none;
+    cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    background: var(--surface); width: 100%;
   }
-
   .action-btn:active { transform: scale(0.98); }
+  .action-btn:hover  { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
 
-  .action-btn:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-
-  /* Log Usage — teal */
-  .btn-usage {
-    background: var(--teal-light);
-    border-color: var(--teal-border);
-  }
-
+  .btn-usage { background: var(--teal-light); border-color: var(--teal-border); }
   .btn-usage:hover { background: rgba(13,148,136,0.13); }
-
-  .btn-usage .btn-icon { background: var(--teal); }
-
+  .btn-usage .btn-icon  { background: var(--teal); }
   .btn-usage .btn-title { color: var(--teal); }
 
-  /* Report Issue — red */
-  .btn-report {
-    background: var(--red-light);
-    border-color: var(--red-border);
-  }
-
+  .btn-report { background: var(--red-light); border-color: var(--red-border); }
   .btn-report:hover { background: rgba(220,38,38,0.11); }
-
-  .btn-report .btn-icon { background: var(--red); }
-
+  .btn-report .btn-icon  { background: var(--red); }
   .btn-report .btn-title { color: var(--red); }
 
-
-
-  .btn-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: #fff;
-  }
-
+  .btn-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
   .btn-icon svg { width: 18px; height: 18px; }
-
-  .btn-text { flex: 1; min-width: 0; }
-
-  .btn-title {
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: -0.1px;
-  }
-
-  .btn-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .btn-arrow {
-    color: var(--muted);
-    flex-shrink: 0;
-  }
-
+  .btn-text  { flex: 1; min-width: 0; }
+  .btn-title { font-size: 14px; font-weight: 600; letter-spacing: -0.1px; }
+  .btn-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .btn-arrow { color: var(--muted); flex-shrink: 0; }
   .btn-arrow svg { width: 16px; height: 16px; }
 
-  /* Divider */
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 24px 14px;
-  }
+  .divider { height: 1px; background: var(--border); margin: 4px 24px 14px; }
 
-  /* Footer */
-  .card-footer {
-    padding: 14px 24px;
-    border-top: 1px solid var(--border);
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-  }
+  .card-footer { padding: 14px 24px; border-top: 1px solid var(--border); text-align: center; font-size: 11px; color: var(--muted); }
 
-  /* ── Issue alert banner ── */
+  /* ── Banners ── */
   .issue-banner {
-    margin: 16px 24px 0;
-    background: rgba(220,38,38,0.07);
-    border: 1.5px solid rgba(220,38,38,0.25);
-    border-radius: 10px;
-    padding: 12px 16px;
-    display: none;
-    align-items: flex-start;
-    gap: 10px;
+    margin: 16px 24px 0; border-radius: 10px; padding: 12px 16px;
+    display: none; align-items: flex-start; gap: 10px;
   }
-
-  .issue-banner-icon {
-    color: var(--red);
-    flex-shrink: 0;
-    margin-top: 1px;
+  .issue-banner.needs-report {
+    background: rgba(220,38,38,0.07); border: 1.5px solid rgba(220,38,38,0.25);
   }
-
+  .issue-banner.issue-reported {
+    background: var(--blue-light); border: 1.5px solid var(--blue-border);
+  }
+  .issue-banner-icon { flex-shrink: 0; margin-top: 1px; }
   .issue-banner-icon svg { width: 16px; height: 16px; }
+  .issue-banner-title { font-size: 12px; font-weight: 600; }
+  .issue-banner-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .needs-report .issue-banner-icon { color: var(--red); }
+  .needs-report .issue-banner-title { color: var(--red); }
+  .issue-reported .issue-banner-icon { color: var(--blue); }
+  .issue-reported .issue-banner-title { color: var(--blue); }
 
-  .issue-banner-text {
-    flex: 1;
-  }
-
-  .issue-banner-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--red);
-  }
-
-  .issue-banner-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  /* ── Resolve button ── */
-  .resolve-wrap {
-    padding: 0 24px 0;
-    display: none;
-  }
-
+  /* ── Resolve/Escalate wrap ── */
+  .resolve-wrap { padding: 0 24px 0; display: none; }
   .btn-resolve {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
-    border-radius: 12px;
-    border: 1.5px solid var(--amber-border);
-    background: var(--amber-light);
-    width: 100%;
-    cursor: pointer;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-    margin-bottom: 0;
+    display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+    border-radius: 12px; border: 1.5px solid var(--amber-border);
+    background: var(--amber-light); width: 100%; cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease; margin-bottom: 0;
   }
-
   .btn-resolve:active { transform: scale(0.98); }
   .btn-resolve:hover  { box-shadow: 0 2px 12px rgba(0,0,0,0.08); background: rgba(217,119,6,0.11); }
   .btn-resolve .btn-icon  { background: var(--amber); }
   .btn-resolve .btn-title { color: var(--amber); }
 
-  /* ── Confirmation modal ── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    z-index: 100;
-  }
-
-  .modal {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 24px;
-    width: 100%;
-    max-width: 340px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  }
-
-  .modal-icon {
-    width: 44px;
-    height: 44px;
-    background: var(--amber-light);
-    border: 1.5px solid var(--amber-border);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--amber);
-    margin-bottom: 14px;
-  }
-
+  /* ── Modal ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; padding: 24px; z-index: 100; }
+  .modal { background: var(--surface); border-radius: 16px; padding: 24px; width: 100%; max-width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+  .modal-icon { width: 44px; height: 44px; background: var(--amber-light); border: 1.5px solid var(--amber-border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--amber); margin-bottom: 14px; }
   .modal-icon svg { width: 22px; height: 22px; }
-
-  .modal h2 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 8px;
-  }
-
-  .modal p {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-bottom: 20px;
-  }
-
+  .modal h2 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .modal p  { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
   .modal p strong { color: var(--text); }
-
-  .modal-btns {
-    display: flex;
-    gap: 10px;
-  }
-
-  .modal-btn {
-    flex: 1;
-    padding: 11px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    font-family: var(--font);
-    transition: opacity 0.1s;
-  }
-
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btn { flex: 1; padding: 11px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: var(--font); transition: opacity 0.1s; }
   .modal-btn:active { opacity: 0.8; }
+  .modal-btn-cancel  { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+  .modal-btn-confirm { background: var(--amber); color: #fff; }
 
-  .modal-btn-cancel {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
-
-  .modal-btn-confirm {
-    background: var(--amber);
-    color: #fff;
-  }
-
-  /* ── Success state ── */
-  .success-banner {
-    margin: 16px 24px 0;
-    background: rgba(22,163,74,0.07);
-    border: 1.5px solid rgba(22,163,74,0.25);
-    border-radius: 10px;
-    padding: 12px 16px;
-    display: none;
-    align-items: center;
-    gap: 10px;
-  }
-
+  /* ── Success ── */
+  .success-banner { margin: 16px 24px 0; background: rgba(22,163,74,0.07); border: 1.5px solid rgba(22,163,74,0.25); border-radius: 10px; padding: 12px 16px; display: none; align-items: center; gap: 10px; }
   .success-banner svg { width: 16px; height: 16px; color: #16a34a; flex-shrink: 0; }
   .success-banner-text { font-size: 12px; font-weight: 600; color: #16a34a; }
 </style>
@@ -421,7 +183,6 @@
 
 <div class="card">
 
-  <!-- Header -->
   <div class="card-header">
     <img src="sila-logo.png"
          onerror="this.style.display='none';document.getElementById('silaFallback').style.display='flex'"
@@ -433,99 +194,79 @@
     </div>
   </div>
 
-
-
   <div class="section-label">What would you like to do?</div>
 
-  <!-- Issue alert banner — shown only if open flag exists -->
+  <!-- Issue banner — shown based on status -->
   <div class="issue-banner" id="issueBanner">
     <div class="issue-banner-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     </div>
     <div class="issue-banner-text">
-      <div class="issue-banner-title">Open issue reported</div>
+      <div class="issue-banner-title" id="issueBannerTitle">Open issue reported</div>
       <div class="issue-banner-sub" id="issueBannerSub">This machine has been flagged as not working</div>
     </div>
   </div>
 
-  <!-- Success banner — shown after resolving -->
+  <!-- Success banner -->
   <div class="success-banner" id="successBanner">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-    <div class="success-banner-text">Issue marked as resolved ✓</div>
+    <div class="success-banner-text" id="successBannerText">Issue marked as resolved ✓</div>
   </div>
 
   <div class="actions">
-
-    <!-- Log Usage -->
-    <a class="action-btn btn-usage" id="btnUsage" href="https://docs.google.com/forms/d/e/1Fk1Mhwurd26D8KOq7SOTzYZDVEmK0C2IwWZJuEtN7WY/viewform" target="_blank">
+    <a class="action-btn btn-usage" id="btnUsage" href="#" target="_blank">
       <div class="btn-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <polyline points="12 7 12 12 15 15"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
       </div>
       <div class="btn-text">
         <div class="btn-title">Log Usage</div>
         <div class="btn-sub">Record a start or stop session</div>
       </div>
-      <div class="btn-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
+      <div class="btn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </a>
 
-    <!-- Report Issue -->
     <a class="action-btn btn-report" id="btnReport" href="#" target="_blank">
       <div class="btn-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
       <div class="btn-text">
         <div class="btn-title">Report Issue</div>
         <div class="btn-sub">Machine not working or needs attention</div>
       </div>
-      <div class="btn-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
+      <div class="btn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </a>
-
   </div>
 
-  <!-- Resolve button — shown only if open flag exists -->
+  <!-- Action button — changes based on status -->
   <div class="resolve-wrap" id="resolveWrap" style="padding: 10px 24px 0">
-    <button class="action-btn btn-resolve" onclick="showResolveModal()">
+    <button class="action-btn btn-resolve" id="actionBtn" onclick="showModal()">
       <div class="btn-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <svg id="actionBtnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <div class="btn-text">
-        <div class="btn-title">Mark as Resolved</div>
-        <div class="btn-sub">Issue has been inspected and fixed</div>
+        <div class="btn-title" id="actionBtnTitle">Mark as Issue Reported</div>
+        <div class="btn-sub" id="actionBtnSub">After filling Sakthivel's report form</div>
       </div>
-      <div class="btn-arrow" style="color:var(--muted)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
+      <div class="btn-arrow" style="color:var(--muted)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
     </button>
   </div>
 
   <div class="card-footer">
     Powered by <span>SILA</span> · ANSR Facility Management
   </div>
-
 </div>
 
-<!-- Confirmation Modal -->
+<!-- Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
-    <h2>Confirm Resolution</h2>
-    <p>Are you sure the issue with <strong id="modalMachineId"></strong> has been fixed and the machine is fully operational?</p>
+    <h2 id="modalTitle">Confirm</h2>
+    <p id="modalBody">Are you sure?</p>
     <div class="modal-btns">
       <button class="modal-btn modal-btn-cancel" onclick="hideModal()">Cancel</button>
-      <button class="modal-btn modal-btn-confirm" onclick="confirmResolve()">Yes, Resolved</button>
+      <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn" onclick="confirmAction()">Confirm</button>
     </div>
   </div>
 </div>
@@ -560,92 +301,107 @@
   document.getElementById('btnUsage').href  = buildFormUrl(BASE_FORM);
   document.getElementById('btnReport').href = buildFormUrl(REPORT_ISSUE_FORM);
 
-  // Set modal machine ID text
-  if (machineId) document.getElementById('modalMachineId').textContent = machineId;
+  let openFlagId    = null;
+  let currentStatus = null; // 'needs_reporting' | 'issue_reported'
 
-  // ── Check for open flags on page load ──
-  let openFlagId = null;
-
+  // ── Check flag status on load ──
   async function checkOpenFlags() {
     if (!machineId) return;
     try {
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/flagged_machines?machine_id=eq.${encodeURIComponent(machineId)}&resolved=eq.false&order=reported_at.desc&limit=1&select=id,reported_at`,
+        `${SUPABASE_URL}/rest/v1/flagged_machines?machine_id=eq.${encodeURIComponent(machineId)}&resolved=eq.false&order=reported_at.desc&limit=1&select=id,status,reported_at`,
         { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
       );
       const data = await res.json();
       if (data && data.length > 0) {
-        openFlagId = data[0].id;
-        const reportedDate = new Date(data[0].reported_at).toLocaleString('en-IN', {
-          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-        });
-        document.getElementById('issueBannerSub').textContent = `Flagged on ${reportedDate}`;
-        document.getElementById('issueBanner').style.display  = 'flex';
-        document.getElementById('resolveWrap').style.display  = 'block';
+        openFlagId    = data[0].id;
+        currentStatus = data[0].status || 'needs_reporting';
+        const reportedDate = new Date(data[0].reported_at).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+
+        const banner = document.getElementById('issueBanner');
+        banner.style.display = 'flex';
+
+        if (currentStatus === 'needs_reporting') {
+          banner.classList.add('needs-report');
+          document.getElementById('issueBannerTitle').textContent = 'Machine flagged as not working';
+          document.getElementById('issueBannerSub').textContent   = `Flagged on ${reportedDate} — needs to be escalated`;
+          document.getElementById('actionBtnTitle').textContent   = 'Mark as Issue Reported';
+          document.getElementById('actionBtnSub').textContent     = 'After filling Sakthivel\'s report form';
+        } else if (currentStatus === 'issue_reported') {
+          banner.classList.add('issue-reported');
+          document.getElementById('issueBannerTitle').textContent = 'Issue reported to maintenance';
+          document.getElementById('issueBannerSub').textContent   = `Reported on ${reportedDate} — awaiting resolution`;
+          document.getElementById('actionBtnTitle').textContent   = 'Mark as Resolved';
+          document.getElementById('actionBtnSub').textContent     = 'Issue has been inspected and fixed';
+        }
+
+        document.getElementById('resolveWrap').style.display = 'block';
+
+        // Set modal content
+        if (currentStatus === 'needs_reporting') {
+          document.getElementById('modalTitle').textContent       = 'Confirm Issue Reported';
+          document.getElementById('modalBody').innerHTML          = `Have you filled Sakthivel's report form for <strong>${machineId}</strong>? This will update the status to <strong>Issue Reported</strong>.`;
+          document.getElementById('modalConfirmBtn').textContent  = 'Yes, Reported';
+        } else {
+          document.getElementById('modalTitle').textContent       = 'Confirm Resolution';
+          document.getElementById('modalBody').innerHTML          = `Is <strong>${machineId}</strong> fully fixed and operational?`;
+          document.getElementById('modalConfirmBtn').textContent  = 'Yes, Resolved';
+        }
       }
     } catch(e) {
       console.error('Flag check failed:', e);
     }
   }
 
-  // ── Modal logic ──
-  function showResolveModal() {
-    document.getElementById('modalOverlay').style.display = 'flex';
-  }
+  function showModal() { document.getElementById('modalOverlay').style.display = 'flex'; }
+  function hideModal() { document.getElementById('modalOverlay').style.display = 'none'; }
 
-  function hideModal() {
-    document.getElementById('modalOverlay').style.display = 'none';
-  }
-
-  // Close modal on overlay tap
   document.getElementById('modalOverlay').addEventListener('click', function(e) {
     if (e.target === this) hideModal();
   });
 
-  // ── Confirm resolve ──
-  async function confirmResolve() {
+  async function confirmAction() {
     hideModal();
-    const confirmBtn = document.querySelector('.modal-btn-confirm');
-    confirmBtn.textContent = 'Resolving…';
+    const confirmBtn = document.getElementById('modalConfirmBtn');
+    confirmBtn.textContent = 'Updating…';
     confirmBtn.disabled = true;
+
+    let patchData = {};
+    if (currentStatus === 'needs_reporting') {
+      patchData = { status: 'issue_reported', reported_to_maintenance_at: new Date().toISOString() };
+    } else {
+      patchData = { resolved: true, resolved_at: new Date().toISOString(), status: 'resolved' };
+    }
 
     try {
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/flagged_machines?id=eq.${openFlagId}`,
         {
           method: 'PATCH',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({
-            resolved: true,
-            resolved_at: new Date().toISOString()
-          })
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+          body: JSON.stringify(patchData)
         }
       );
 
       if (res.ok || res.status === 204) {
-        // Hide banner and resolve button, show success
         document.getElementById('issueBanner').style.display  = 'none';
         document.getElementById('resolveWrap').style.display  = 'none';
-        document.getElementById('successBanner').style.display = 'flex';
-        openFlagId = null;
+        const sb = document.getElementById('successBanner');
+        sb.style.display = 'flex';
+        document.getElementById('successBannerText').textContent = currentStatus === 'needs_reporting'
+          ? 'Issue reported to maintenance ✓'
+          : 'Issue marked as resolved ✓';
+        openFlagId = null; currentStatus = null;
       } else {
         alert('Something went wrong. Please try again.');
-        confirmBtn.textContent = 'Yes, Resolved';
-        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm'; confirmBtn.disabled = false;
       }
     } catch(e) {
       alert('Network error. Please check your connection and try again.');
-      confirmBtn.textContent = 'Yes, Resolved';
-      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Confirm'; confirmBtn.disabled = false;
     }
   }
 
-  // Run flag check on load
   checkOpenFlags();
 </script>
 
