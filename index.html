@@ -1274,6 +1274,13 @@ function renderChartMachine() {
   // Label: machine model · short site name
   const labels = entries.map(e => {
     const shortSite = e.siteName.replace(/^ANSR\s*[–-]\s*/i, '').replace(/^ANSR\s+/i, '');
+    const parts = e.id.split('-');
+    const model = parts.slice(1, parts.length - 1).join('-') || e.id;
+    return `${model} · ${shortSite}`;
+  });
+
+  const tooltipLabels = entries.map(e => {
+    const shortSite = e.siteName.replace(/^ANSR\s*[–-]\s*/i, '').replace(/^ANSR\s+/i, '');
     return `${e.desc} · ${shortSite}`;
   });
 
