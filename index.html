@@ -1353,6 +1353,7 @@ function renderChartMachine() {
         legend: { display: false },
         tooltip: {
           callbacks: {
+            title: ctx => tooltipLabels[ctx[0].dataIndex],
             label: ctx => {
               const e = entries[ctx.dataIndex];
               return [
