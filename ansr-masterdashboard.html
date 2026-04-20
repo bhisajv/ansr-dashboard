@@ -281,7 +281,7 @@ tbody tr:hover td { background: var(--surface2); }
       <div class="divider-v"></div>
       <div>
         <div class="header-title">ANSR Pan-India DMR Dashboard</div>
-        <div class="header-sub">11 sites · Facility Management Operations</div>
+        <div class="header-sub">28 sites · Facility Management Operations</div>
       </div>
     </div>
     <div class="header-right">
@@ -372,17 +372,38 @@ tbody tr:hover td { background: var(--surface2); }
 
 <script>
 const SITES = [
-  { code: "SITE2493", name: "ANSR – AVIS BUDGET GROUP" },
-  { code: "SITE4609", name: "ANSR 3RD FLOOR BLOCK BANYAN L1" },
+  // Bangalore
+  { code: "SITE2493", name: "ANSR AVIS BUDGET GROUP" },
+  { code: "SITE4609", name: "ANSR 3RD FLOOR BLOCK BANYAN L1 BLR" },
   { code: "SITE4677", name: "ANSR ALBERTSONS BANGALORE" },
   { code: "SITE4693", name: "ANSR BBY M3 F9 BLR" },
   { code: "SITE2251", name: "ANSR DELTA" },
+  { code: "SITE2250", name: "ANSR FALABELLA 1ST FLOOR" },
   { code: "SITE4788", name: "ANSR FM GLOBAL BANGALORE" },
+  { code: "SITE2249", name: "ANSR G FLOOR" },
   { code: "SITE2255", name: "ANSR G3 2 AND 3 FLOOR" },
+  { code: "SITE4080", name: "ANSR GIANT EAGLE J BLOCK GF BLR" },
   { code: "SITE3335", name: "ANSR J BLOCK" },
+  { code: "SITE2253", name: "ANSR KAS 5TH FLOOR" },
   { code: "SITE3180", name: "ANSR KENVUE D3" },
+  { code: "SITE3533", name: "ANSR LULULEMON NXT MANYATA" },
   { code: "SITE4199", name: "ANSR M3 11TH AND 12 FLOOR" },
   { code: "SITE4023", name: "ANSR M3 19TH FLOOR BLR" },
+  { code: "SITE4924", name: "ANSR SAAKS BANGALORE" },
+  // Trivandrum
+  { code: "SITE4381", name: "ANSR ARCH TRIVANDRUM" },
+  // Hyderabad
+  { code: "SITE3665", name: "ANSR BMS CAPITLAND HYD 2" },
+  { code: "SITE4250", name: "ANSR FLEX HYD" },
+  { code: "SITE4259", name: "ANSR AMERICAN AIRLINES HYD" },
+  { code: "SITE4260", name: "ANSR MARRIOTT HYD" },
+  { code: "SITE4267", name: "ANSR FLEXLITE HYD" },
+  { code: "SITE4597", name: "ANSR DBAG HYD" },
+  { code: "SITE4750", name: "ANSR NASUNI HYDERABAD" },
+  { code: "SITE4903", name: "ANSR COSTCO HYDERABAD" },
+  // Others
+  { code: "SITE3069", name: "ANSR IRB" },
+  { code: "SITE3541", name: "ANSR INOVALON 11TH FLOOR CAPITALAND" },
 ];
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
