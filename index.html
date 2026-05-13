@@ -1628,7 +1628,14 @@ function renderMachineMaster() {
 // Flagged Machines
 // ══════════════════════════════════════════════════════════
 function renderFlaggedMachines() {
-  const count = allFlagged.length;
+  const siteFilter = document.getElementById("siteFilter").value;
+  const machineFilter = document.getElementById("machineFilter").value;
+  const filtered = allFlagged.filter(f => {
+    if (siteFilter && f.siteCode !== siteFilter) return false;
+    if (machineFilter && f.machineId !== machineFilter) return false;
+    return true;
+  });
+  const count = filtered.length;
   const badge = document.getElementById("flaggedBadge");
   if (badge) {
     badge.textContent = count + " Issue" + (count !== 1 ? "s" : "");
@@ -1636,8 +1643,8 @@ function renderFlaggedMachines() {
     badge.style.color = count > 0 ? "#ef4444" : "#22c55e";
   }
 
-  document.getElementById("flaggedTableBody").innerHTML = allFlagged.length > 0
-    ? allFlagged.map(f => {
+  document.getElementById("flaggedTableBody").innerHTML = filtered.length > 0
+    ? filtered.map(f => {
         const shortSite = (f.siteName || "").replace(/^ANSR\s*[\u2013-]\s*/i,"").replace(/^ANSR\s+/i,"");
         const reportedDate = f.reportedAt
           ? new Date(f.reportedAt).toLocaleString("en-IN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" })
