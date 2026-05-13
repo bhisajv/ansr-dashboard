@@ -1294,7 +1294,7 @@ function renderChartMachine() {
     const ctx = document.getElementById("chartMachine").getContext("2d");
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.fillStyle = "#6b6b72";
-    ctx.font = "13px DM Sans";
+    ctx.font = "13px Inter";
     ctx.textAlign = "center";
     ctx.fillText("No sessions in this period", ctx.canvas.width / 2, ctx.canvas.height / 2);
     return;
@@ -1390,6 +1390,17 @@ function renderChartType() {
   const colors = ["#2dd4bf", "#60a5fa", "#fbbf24", "#f87171", "#a78bfa"];
 
   const ctx = document.getElementById("chartType").getContext("2d");
+
+  if (labels.length === 0) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = "#6b6b72";
+    ctx.font = "13px Inter";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("No sessions in this period", ctx.canvas.width / 2, ctx.canvas.height / 2);
+    return;
+  }
+
   charts.type = new Chart(ctx, {
     type: "doughnut",
     data: {
@@ -1485,7 +1496,7 @@ function renderSiteHours() {
       `<div class="progress-track"><div class="progress-fill" style="width:${(days/max*100).toFixed(1)}%;background:${color}"></div></div>` +
       `<div id="${uid}" style="margin-top:6px;display:none;flex-direction:column;gap:2px">${machineRows}</div>` +
     `</div>`;
-  }).join("") || "<div style=\"color:var(--muted);font-size:12px;padding:8px 0\">No data for this period</div>";
+  }).join("") || "<div style=\"color:var(--muted);font-size:13px;font-family:var(--font);text-align:center;padding:40px 0;width:100%\">No data for this period</div>";
 }
 
 function toggleSiteBreakdown(uid, btn) {
