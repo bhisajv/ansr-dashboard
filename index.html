@@ -730,6 +730,7 @@
             <div class="card-sub">Top machines by % of available hours used</div>
           </div>
         </div>
+        <div id="chartMachineEmpty" style="display:none;height:200px;display:none;align-items:center;justify-content:center;color:var(--muted);font-size:13px;font-family:var(--font)">No sessions in this period</div>
         <canvas id="chartMachine" height="200"></canvas>
       </div>
       <div class="card">
@@ -739,6 +740,7 @@
             <div class="card-sub">Share of total hours</div>
           </div>
         </div>
+        <div id="chartTypeEmpty" style="display:none;height:200px;align-items:center;justify-content:center;color:var(--muted);font-size:13px;font-family:var(--font)">No sessions in this period</div>
         <canvas id="chartType" height="200"></canvas>
       </div>
     </div>
@@ -1291,14 +1293,13 @@ function renderChartMachine() {
   // No data guard
   if (entries.length === 0) {
     destroyChart("machine");
-    const ctx = document.getElementById("chartMachine").getContext("2d");
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.fillStyle = "#6b6b72";
-    ctx.font = "13px Inter";
-    ctx.textAlign = "center";
-    ctx.fillText("No sessions in this period", ctx.canvas.width / 2, ctx.canvas.height / 2);
+    document.getElementById("chartMachine").style.display = "none";
+    const empty = document.getElementById("chartMachineEmpty");
+    empty.style.display = "flex";
     return;
   }
+  document.getElementById("chartMachine").style.display = "block";
+  document.getElementById("chartMachineEmpty").style.display = "none";
     from === to ? from : `${from} → ${to}`;
 
   // Color bars by utilisation level
@@ -1392,14 +1393,14 @@ function renderChartType() {
   const ctx = document.getElementById("chartType").getContext("2d");
 
   if (labels.length === 0) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.fillStyle = "#6b6b72";
-    ctx.font = "13px Inter";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("No sessions in this period", ctx.canvas.width / 2, ctx.canvas.height / 2);
+    destroyChart("type");
+    document.getElementById("chartType").style.display = "none";
+    const empty = document.getElementById("chartTypeEmpty");
+    empty.style.display = "flex";
     return;
   }
+  document.getElementById("chartType").style.display = "block";
+  document.getElementById("chartTypeEmpty").style.display = "none";
 
   charts.type = new Chart(ctx, {
     type: "doughnut",
@@ -1496,7 +1497,7 @@ function renderSiteHours() {
       `<div class="progress-track"><div class="progress-fill" style="width:${(days/max*100).toFixed(1)}%;background:${color}"></div></div>` +
       `<div id="${uid}" style="margin-top:6px;display:none;flex-direction:column;gap:2px">${machineRows}</div>` +
     `</div>`;
-  }).join("") || "<div style=\"color:var(--muted);font-size:13px;font-family:var(--font);text-align:center;padding:40px 0;width:100%\">No data for this period</div>";
+  }).join("") || "<div style=\"color:var(--muted);font-size:13px;font-family:'Inter',sans-serif;text-align:center;padding:40px 0;width:100%\">No data for this period</div>";
 }
 
 function toggleSiteBreakdown(uid, btn) {
@@ -1670,7 +1671,7 @@ function renderFlaggedMachines() {
           "<td style=\"color:#ef4444;font-size:11px;white-space:nowrap\">" + reportedDate + "</td>" +
         "</tr>";
       }).join("")
-    : "<tr><td colspan=\"6\" style=\"text-align:center;padding:20px;color:var(--muted)\">No flagged machines — all operational ✓</td></tr>";
+    : "<tr><td colspan=\"6\" style=\"text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;font-family:'Inter',sans-serif\">No flagged machines — all operational ✓</td></tr>";
 }
 
 loadData();
