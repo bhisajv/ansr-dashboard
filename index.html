@@ -464,9 +464,10 @@
 
   /* ── Machine Master Table ── */
   .table-wrap {
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
     max-height: 320px;
+    -webkit-overflow-scrolling: touch;
   }
   table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 0; }
   thead th {
@@ -486,7 +487,7 @@
   tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 11px; }
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--surface2); }
-  .td-code { font-family: var(--mono); color: var(--teal); font-size: 11px; }
+  .td-code { font-family: var(--mono); color: var(--teal); font-size: 11px; white-space: nowrap; }
   .td-site { color: var(--muted); font-size: 11px; }
   .loading-state {
     display: flex;
@@ -619,6 +620,9 @@
     .col-make, .col-model { display: none; }
     /* Machine ID wraps instead of overflowing */
     .td-code { word-break: break-all; max-width: 100px; }
+    .bottom-row { grid-template-columns: 1fr; }
+    tbody td { white-space: nowrap; }
+    thead th { white-space: nowrap; }
   }
 
   @media (max-width: 400px) {
@@ -785,7 +789,7 @@
             style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
                    padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:140px">
         </div>
-        <div style="max-height:320px;overflow-y:auto;overflow-x:hidden;margin-top:10px">
+        <div style=\"max-height:320px;overflow-y:auto;overflow-x:hidden;margin-top:10px\">
           <table id="machineMasterTable">
             <thead>
               <tr>
@@ -813,7 +817,7 @@
           </div>
           <span class="card-badge" id="flaggedBadge" style="background:rgba(239,68,68,0.12);color:#ef4444">0 Issues</span>
         </div>
-        <div style="max-height:320px;overflow-y:auto;overflow-x:hidden;margin-top:10px">
+        <div style=\"max-height:320px;overflow-y:auto;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch\">
           <table id="flaggedTable">
             <thead>
               <tr>
