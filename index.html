@@ -461,7 +461,6 @@
     transition: width 0.6s ease;
   }
 
-
   /* ── Machine Master Table ── */
   .table-wrap {
     overflow-x: auto;
@@ -469,7 +468,8 @@
     max-height: 320px;
     -webkit-overflow-scrolling: touch;
   }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 500px; }
+  /* CHANGED: min-width increased, nowrap on th and td, description td handled inline */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px; }
   thead th {
     text-align: left;
     padding: 8px 10px;
@@ -483,12 +483,17 @@
     top: 0;
     background: var(--surface);
     z-index: 1;
+    white-space: nowrap;
   }
-  tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 11px; }
+  tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 11px; white-space: nowrap; }
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--surface2); }
   .td-code { font-family: var(--mono); color: var(--teal); font-size: 11px; white-space: nowrap; }
   .td-site { color: var(--muted); font-size: 11px; }
+  /* CHANGED: per-table min-widths */
+  #machineMasterTable { min-width: 600px; }
+  #flaggedTable { min-width: 750px; }
+
   .loading-state {
     display: flex;
     flex-direction: column;
@@ -520,7 +525,6 @@
     font-size: 13px;
     margin: 20px 0;
   }
-
 
   .idle-item {
     display: flex;
@@ -616,9 +620,7 @@
     canvas { max-height: 220px !important; }
     .site-grid { grid-template-columns: 1fr !important; }
     .idle-grid { grid-template-columns: 1fr 1fr !important; }
-    /* Hide less critical columns on small screens */
     .col-make, .col-model { display: none; }
-    /* Machine ID wraps instead of overflowing */
     .td-code { white-space: nowrap; }
     .bottom-row { grid-template-columns: 1fr; }
   }
@@ -732,7 +734,7 @@
             <div class="card-sub">Top machines by % of available hours used</div>
           </div>
         </div>
-        <div id="chartMachineEmpty" style="display:none;height:200px;display:none;align-items:center;justify-content:center;color:var(--muted);font-size:13px;font-family:var(--font)">No sessions in this period</div>
+        <div id="chartMachineEmpty" style="display:none;height:200px;align-items:center;justify-content:center;color:var(--muted);font-size:13px;font-family:var(--font)">No sessions in this period</div>
         <canvas id="chartMachine" height="200"></canvas>
       </div>
       <div class="card">
@@ -787,6 +789,7 @@
             style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
                    padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:140px">
         </div>
+        <!-- FIXED: proper unescaped style attribute -->
         <div style="max-height:320px;overflow-y:auto;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch;">
           <table id="machineMasterTable">
             <thead>
@@ -815,7 +818,8 @@
           </div>
           <span class="card-badge" id="flaggedBadge" style="background:rgba(239,68,68,0.12);color:#ef4444">0 Issues</span>
         </div>
-        <div style=\"max-height:320px;overflow-y:auto;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch\">
+        <!-- FIXED: proper unescaped style attribute -->
+        <div style="max-height:320px;overflow-y:auto;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch;">
           <table id="flaggedTable">
             <thead>
               <tr>
@@ -976,7 +980,6 @@ async function loadData(silent = false) {
 // Filters
 // ══════════════════════════════════════════════════════════
 function populateFilters() {
-  // Build site map from allMachines (master list)
   const siteMap = {};
   allMachines.forEach(m => { siteMap[m.siteCode] = m.siteName; });
 
@@ -999,7 +1002,6 @@ function updateMachineDropdown() {
   const siteFilter  = document.getElementById("siteFilter").value;
   const prevMachine = document.getElementById("machineFilter").value;
 
-  // Build from allMachines (master list) not sessions
   const filtered = allMachines.filter(m => !siteFilter || m.siteCode === siteFilter);
   const sorted   = [...filtered].sort((a, b) => a.machineId.localeCompare(b.machineId));
 
@@ -1012,7 +1014,6 @@ function updateMachineDropdown() {
     mEl.appendChild(o);
   });
 
-  // Reset if site changed or machine no longer valid
   if (!siteFilter) {
     mEl.value = "";
   } else if (prevMachine && sorted.find(m => m.machineId === prevMachine)) {
@@ -1101,7 +1102,6 @@ function renderKPIs() {
   const sessionCount = sessions.length;
   const flaggedCount = allFlagged.length;
 
-  // ── Uptime / Downtime — machine specific only ──
   const [from, to] = getDateRange();
   const machineFilter = document.getElementById("machineFilter").value;
   const siteFilter    = document.getElementById("siteFilter").value;
@@ -1109,7 +1109,6 @@ function renderKPIs() {
   let uptimeDowntimeCard = '';
 
   if (!machineFilter) {
-    // No machine selected — show prompt
     uptimeDowntimeCard = `
       <div class="kpi-card highlight-amber">
         <div class="kpi-card-top">
@@ -1125,7 +1124,6 @@ function renderKPIs() {
       </div>
     `;
   } else {
-    // Machine selected — calculate uptime and downtime for that machine
     const uptimeDays = new Set(sessions.map(s => s.date)).size;
 
     const downtimeDays = new Set(
@@ -1137,7 +1135,6 @@ function renderKPIs() {
       }).map(f => f.workingDate)
     ).size;
 
-    // Get machine description for subtitle
     const machineDesc = allMachines.find(m => m.machineId === machineFilter)?.machineDesc || machineFilter;
     const shortDesc = machineDesc.length > 22 ? machineDesc.substring(0, 22) + '…' : machineDesc;
 
@@ -1235,17 +1232,16 @@ function destroyChart(id) {
   if (charts[id]) { charts[id].destroy(); delete charts[id]; }
 }
 
-
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
+
 // ══════════════════════════════════════════════════════════
 // Chart: Usage by Machine (bar)
 // ══════════════════════════════════════════════════════════
 function renderChartMachine() {
   destroyChart("machine");
 
-  // Build machine → hours from filtered sessions
   const machineData = {};
   filteredSessions.forEach(s => {
     if (!machineData[s.machineId]) {
@@ -1254,7 +1250,6 @@ function renderChartMachine() {
     machineData[s.machineId].hrs += s.duration;
   });
 
-  // Calculate utilisation % per machine: hrs / (8h × days in period)
   const [from, to] = getDateRange();
   const fromDate = new Date(from);
   const toDate = new Date(to);
@@ -1262,13 +1257,12 @@ function renderChartMachine() {
   const cur = new Date(fromDate);
   while (cur <= toDate) {
     const dow = cur.getDay();
-    if (dow >= 1 && dow <= 6) periodDays++; // Mon–Sat
+    if (dow >= 1 && dow <= 6) periodDays++;
     cur.setDate(cur.getDate() + 1);
   }
   periodDays = Math.max(1, periodDays);
   const maxHrs = 8 * periodDays;
 
-  // Build sorted entries by utilisation %
   const entries = Object.entries(machineData).map(([id, d]) => ({
     id,
     hrs: d.hrs,
@@ -1277,7 +1271,6 @@ function renderChartMachine() {
     desc: d.desc
   })).sort((a, b) => b.pct - a.pct).slice(0, 8);
 
-  // Label: machine model · short site name
   const labels = entries.map(e => {
     const shortSite = e.siteName.replace(/^ANSR\s*[–-]\s*/i, '').replace(/^ANSR\s+/i, '');
     const parts = e.id.split('-');
@@ -1292,7 +1285,6 @@ function renderChartMachine() {
 
   const vals = entries.map(e => +e.pct.toFixed(1));
 
-  // No data guard
   if (entries.length === 0) {
     destroyChart("machine");
     document.getElementById("chartMachine").style.display = "none";
@@ -1302,13 +1294,11 @@ function renderChartMachine() {
   }
   document.getElementById("chartMachine").style.display = "block";
   document.getElementById("chartMachineEmpty").style.display = "none";
-    from === to ? from : `${from} → ${to}`;
 
-  // Color bars by utilisation level
   const barColors = vals.map(v =>
-    v >= 75 ? "rgba(74,222,128,0.7)"   // green — high use
-    : v >= 40 ? "rgba(45,212,191,0.7)" // teal — moderate
-    : "rgba(251,191,36,0.5)"           // amber — low use
+    v >= 75 ? "rgba(74,222,128,0.7)"
+    : v >= 40 ? "rgba(45,212,191,0.7)"
+    : "rgba(251,191,36,0.5)"
   );
   const borderColors = vals.map(v =>
     v >= 75 ? "#4ade80" : v >= 40 ? "#2dd4bf" : "#fbbf24"
@@ -1316,7 +1306,7 @@ function renderChartMachine() {
 
   const ctx = document.getElementById("chartMachine").getContext("2d");
   const maxVal = Math.max(...vals);
-  const yMax = Math.ceil(maxVal * 1.15); // 15% headroom above highest bar
+  const yMax = Math.ceil(maxVal * 1.15);
 
   charts.machine = new Chart(ctx, {
     type: "bar",
@@ -1436,26 +1426,19 @@ function renderChartType() {
 }
 
 // ══════════════════════════════════════════════════════════
-// Site Utilisation
-// ══════════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════════
 // Site Hours (absolute)
 // ══════════════════════════════════════════════════════════
 function renderSiteHours() {
   const siteNameMap = {};
   allSessions.forEach(s => { siteNameMap[s.siteCode] = s.siteName; });
 
-  // Site level: distinct days per site
   const siteDays = {};
-  // Machine level: distinct days per machine per site
   const siteMachineDays = {};
 
   filteredSessions.forEach(s => {
-    // Site days
     if (!siteDays[s.siteCode]) siteDays[s.siteCode] = new Set();
     siteDays[s.siteCode].add(s.date);
 
-    // Machine days
     if (!siteMachineDays[s.siteCode]) siteMachineDays[s.siteCode] = {};
     if (!siteMachineDays[s.siteCode][s.machineId]) {
       siteMachineDays[s.siteCode][s.machineId] = { days: new Set(), desc: s.machineDesc };
@@ -1463,7 +1446,6 @@ function renderSiteHours() {
     siteMachineDays[s.siteCode][s.machineId].days.add(s.date);
   });
 
-  // Convert sets to counts
   const siteDayCounts = Object.fromEntries(
     Object.entries(siteDays).map(([code, set]) => [code, set.size])
   );
@@ -1509,6 +1491,7 @@ function toggleSiteBreakdown(uid, btn) {
   el.style.display = isHidden ? "flex" : "none";
   btn.classList.toggle("collapsed", !isHidden);
 }
+
 function renderSiteUtil() {
   const siteMachineCount = {};
   allMachines.forEach(m => {
@@ -1528,7 +1511,6 @@ function renderSiteUtil() {
   const toDate = new Date(to);
   const dayType = document.getElementById("utilDayType")?.value || "working";
 
-  // Count days in period
   let periodDays = 0;
   const cur = new Date(fromDate);
   while (cur <= toDate) {
@@ -1570,7 +1552,6 @@ function renderSiteUtil() {
 function renderIdleMachines() {
   const siteFilter = document.getElementById("siteFilter").value;
 
-  // Filter machine master to selected site first
   const siteMachines = siteFilter
     ? allMachines.filter(m => m.siteCode === siteFilter)
     : allMachines;
@@ -1598,21 +1579,20 @@ function renderIdleMachines() {
     }).join("");
   }
 }
+
 // ══════════════════════════════════════════════════════════
 // Machine Master
 // ══════════════════════════════════════════════════════════
 let masterOpen = true;
 
-function toggleMachineMaster() {} // no-op, kept for safety
+function toggleMachineMaster() {}
 
 function renderMachineMaster() {
   const q = (document.getElementById("masterSearch")?.value || "").toLowerCase();
   const siteFilter = document.getElementById("siteFilter").value;
 
   const filtered = allMachines.filter(m => {
-    // Respect site filter
     if (siteFilter && m.siteCode !== siteFilter) return false;
-    // Respect search query
     if (q) {
       return m.machineId.toLowerCase().includes(q) ||
              m.siteName.toLowerCase().includes(q) ||
@@ -1630,7 +1610,8 @@ function renderMachineMaster() {
     return "<tr>" +
       "<td class=\"td-code\">" + m.machineId + "</td>" +
       "<td class=\"td-site\" title=\"" + m.siteName + "\">" + shortSite + "</td>" +
-      "<td>" + m.machineDesc + "</td>" +
+      // CHANGED: allow description to wrap naturally
+      "<td style=\"white-space:normal;min-width:120px\">" + m.machineDesc + "</td>" +
       "<td style=\"color:var(--muted);font-size:11px\" class=\"col-make\">" + (m.make || "—") + "</td>" +
       "<td style=\"font-family:var(--mono);font-size:11px\" class=\"col-model\">" + (m.model || "—") + "</td>" +
     "</tr>";
@@ -1665,14 +1646,15 @@ function renderFlaggedMachines() {
         return "<tr style=\"background:rgba(239,68,68,0.04)\">" +
           "<td class=\"td-code\" style=\"color:#ef4444;font-weight:600\">" + f.machineId + "</td>" +
           "<td class=\"td-site\" title=\"" + (f.siteName||"") + "\">" + shortSite + "</td>" +
-          "<td>" + (f.machineDesc || "—") + "</td>" +
+          // CHANGED: allow description to wrap naturally
+          "<td style=\"white-space:normal;min-width:120px\">" + (f.machineDesc || "—") + "</td>" +
           "<td style=\"color:var(--muted);font-size:11px\" class=\"col-make\">" + (f.make || "—") + "</td>" +
           "<td style=\"font-family:var(--mono);font-size:11px\" class=\"col-model\">" + (f.model || "—") + "</td>" +
           "<td style=\"color:var(--muted);font-size:11px\">" + (f.staffName || "—") + "</td>" +
           "<td style=\"color:#ef4444;font-size:11px;white-space:nowrap\">" + reportedDate + "</td>" +
         "</tr>";
       }).join("")
-    : "<tr><td colspan=\"7\" style=\"text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;font-family:'Inter',sans-serif\">No flagged machines — All operational </td></tr>";
+    : "<tr><td colspan=\"7\" style=\"text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;font-family:'Inter',sans-serif\">No flagged machines — All operational</td></tr>";
 }
 
 loadData();
