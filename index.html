@@ -469,7 +469,7 @@
     max-height: 320px;
     -webkit-overflow-scrolling: touch;
   }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 500px; }
   thead th {
     text-align: left;
     padding: 8px 10px;
@@ -619,10 +619,8 @@
     /* Hide less critical columns on small screens */
     .col-make, .col-model { display: none; }
     /* Machine ID wraps instead of overflowing */
-    .td-code { word-break: break-all; max-width: 100px; }
+    .td-code { white-space: nowrap; }
     .bottom-row { grid-template-columns: 1fr; }
-    tbody td { white-space: nowrap; }
-    thead th { white-space: nowrap; }
   }
 
   @media (max-width: 400px) {
@@ -789,7 +787,7 @@
             style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
                    padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font);width:140px">
         </div>
-        <div style=\"max-height:320px;overflow-y:auto;overflow-x:hidden;margin-top:10px\">
+        <div style="max-height:320px;overflow-y:auto;overflow-x:auto;margin-top:10px;-webkit-overflow-scrolling:touch;">
           <table id="machineMasterTable">
             <thead>
               <tr>
