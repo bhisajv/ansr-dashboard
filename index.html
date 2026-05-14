@@ -1611,7 +1611,7 @@ function renderMachineMaster() {
       "<td class=\"td-code\">" + m.machineId + "</td>" +
       "<td class=\"td-site\" title=\"" + m.siteName + "\">" + shortSite + "</td>" +
       // CHANGED: allow description to wrap naturally
-      "<td style=\"white-space:normal;min-width:120px\">" + m.machineDesc + "</td>" +
+      "<td style=\"white-space:normal;min-width:120px;max-width:160px\">" + m.machineDesc + "</td>" +
       "<td style=\"color:var(--muted);font-size:11px\" class=\"col-make\">" + (m.make || "—") + "</td>" +
       "<td style=\"font-family:var(--mono);font-size:11px\" class=\"col-model\">" + (m.model || "—") + "</td>" +
     "</tr>";
@@ -1647,7 +1647,7 @@ function renderFlaggedMachines() {
           "<td class=\"td-code\" style=\"color:#ef4444;font-weight:600\">" + f.machineId + "</td>" +
           "<td class=\"td-site\" title=\"" + (f.siteName||"") + "\">" + shortSite + "</td>" +
           // CHANGED: allow description to wrap naturally
-          "<td style=\"white-space:normal;min-width:120px\">" + (f.machineDesc || "—") + "</td>" +
+          "<td style=\"white-space:normal;min-width:120px;max-width:160px\">" + (f.machineDesc || "—") + "</td>" +
           "<td style=\"color:var(--muted);font-size:11px\" class=\"col-make\">" + (f.make || "—") + "</td>" +
           "<td style=\"font-family:var(--mono);font-size:11px\" class=\"col-model\">" + (f.model || "—") + "</td>" +
           "<td style=\"color:var(--muted);font-size:11px\">" + (f.staffName || "—") + "</td>" +
